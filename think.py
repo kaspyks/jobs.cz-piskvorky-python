@@ -42,7 +42,7 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 						if a_s[4] == 1:  # no. 6
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
 						if a_s[4] == opponent:  # no. 8
-							dir_score = count_dir_score(dir_score, actual, u_id, 200, 170)
+							dir_score = count_dir_score(dir_score, actual, u_id, 110, 110)
 				if a_s[-1] == actual:
 					if a_s[-2] == actual:  # no. 5
 						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
@@ -50,9 +50,9 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 						if a_s[-2] == 1:  # no. 10
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
 						if a_s[-2] == opponent:  # no. 12
-							dir_score = count_dir_score(dir_score, actual, u_id, 200, 170)
+							dir_score = count_dir_score(dir_score, actual, u_id, 110, 110)
 					if a_s[-2] == 1 and a_s[3] == opponent:  # no. 14
-						dir_score = count_dir_score(dir_score, actual, u_id, 200, 170)
+						dir_score = count_dir_score(dir_score, actual, u_id, 110, 110)
 				if a_s[3] == 1:
 					if a_s[-1] == 1:  # no. 16
 						dir_score = count_dir_score(dir_score, actual, u_id, 250, 190)
@@ -79,15 +79,15 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 						if a_s[-4] == 1:  # no. 7
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
 						if a_s[-4] == opponent:  # no. 9
-							dir_score = count_dir_score(dir_score, actual, u_id, 200, 170)
+							dir_score = count_dir_score(dir_score, actual, u_id, 110, 110)
 				if a_s[1] == actual:
 					if a_s[-3] == 1:
 						if a_s[2] == 1:  # no. 11
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
 						if a_s[2] == opponent:  # no. 13
-							dir_score = count_dir_score(dir_score, actual, u_id, 200, 170)
+							dir_score = count_dir_score(dir_score, actual, u_id, 110, 110)
 					if a_s[-3] == opponent and a_s[2] == 1:  # no. 15
-						dir_score = count_dir_score(dir_score, actual, u_id, 200, 170)
+						dir_score = count_dir_score(dir_score, actual, u_id, 110, 110)
 				if a_s[1] == 1:
 					if a_s[-3] == 1:  # no. 18
 						dir_score = count_dir_score(dir_score, actual, u_id, 250, 190)

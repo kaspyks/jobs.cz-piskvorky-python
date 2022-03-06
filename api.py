@@ -6,12 +6,6 @@ import json
 import think
 
 
-# {"statusCode":226,"playerCrossId":"30fc486c-0d9a-48de-a7fb-b175fe19530f","playerCircleId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","actualPlayerId":"30fc486c-0d9a-48de-a7fb-b175fe19530f","winnerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","coordinates":[{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":3,"y":-7}],"headers":{}}
-# {"statusCode":201,"gameToken":"a103d003-e081-4d3a-8848-2295b484efef","gameId":"908be60f-0697-47e1-ad3b-bff5e6e09194","headers":{}}
-# {"statusCode":200,"playerCrossId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","playerCircleId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","actualPlayerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","winnerId":null,"coordinates":[{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-1,"y":-3}],"headers":{}}
-# {"statusCode":200,"playerCrossId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","playerCircleId":null,"actualPlayerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","winnerId":null,"coordinates":[],"headers":{}}
-# {"statusCode":200,"playerCrossId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","playerCircleId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","actualPlayerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","winnerId":null,"coordinates":[{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":1,"y":-5},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":0,"y":-4},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-5,"y":-5},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-4,"y":-4},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-2,"y":-3},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-4,"y":-3},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-4,"y":0},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-1,"y":-3},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":0,"y":0},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-2,"y":-2},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-3,"y":-4},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-3,"y":-3},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":0,"y":2},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-3,"y":-2},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-4,"y":-2},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-1,"y":1},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-2,"y":-1},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-3,"y":-1},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-3,"y":1},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-1,"y":-1},{"playerId":"cbf38348-96e1-4617-b679-aa8a7485c5e0","x":-1,"y":0},{"playerId":"81b7fc85-566e-43b2-aa6e-e63ab1d589db","x":-2,"y":0}],"headers":{}}
-
 def completed_game(conn, res, g_token, u_id):
     cur = conn.cursor()
     if res['winnerId'] == u_id:
@@ -65,8 +59,12 @@ def edit_game_dict(res, game, grid):
 
 def init_game(conn, u_token, args):
     print('Init game')
+    cur = conn.cursor()
+    if not cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='games';"):
+        cur.execute("CREATE TABLE games (gID VARCHAR (50), gToken VARCHAR (50), status VARCHAR (50), tries INTEGER, \
+        UNIQUE (gID, gToken));")
+        conn.commit()
     if len(args) > 1:
-        cur = conn.cursor()
         cur.execute("SELECT gToken FROM games WHERE gID = ?;", [args[1]])
         row = cur.fetchone()
         if row:
@@ -80,7 +78,6 @@ def init_game(conn, u_token, args):
     if res['statusCode'] < 400:
         g_token = res['gameToken']
         g_id = res['gameId']
-        cur = conn.cursor()
         cur.execute("INSERT INTO games ( gID, gToken, status ) VALUES (?, ?, 'waiting')", [g_id, g_token])
         conn.commit()
         print("python3 main.py " + g_id)

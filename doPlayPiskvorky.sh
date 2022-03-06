@@ -3,14 +3,8 @@
 # robot-honza: 97fcaf02-ebd8-4a93-9252-cad52f9a8a1f
 while true
 do
-	if [[ -f "$( dirname "$( realpath "${0}" )" )/STOP" ]]
-	then
-		echo "Stopped, waiting..."
-		sleep 300
-		continue
-	fi
-	
-	if [[ $( ps aux | grep "python3 /home/kaspy/scripts/piskvorky_python/main.py" | grep -v "grep" | wc -l ) -gt 1 ]]
+	instances=$(cat "$( dirname "$( realpath "${0}" )" )/AUTO-INSTANCES")
+	if [[ $( ps aux | grep "python3 $( dirname "$( realpath "${0}" )" )/main.py" | grep -v "grep" | wc -l ) -ge ${instances} ]]
 	then
 		echo "Playing too much games in same time, waiting..."
 		sleep 30
