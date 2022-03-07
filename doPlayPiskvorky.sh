@@ -4,7 +4,7 @@
 while true
 do
 	instances=$(cat "$( dirname "$( realpath "${0}" )" )/AUTO-INSTANCES")
-	if [[ $( ps aux | grep "python3 $( dirname "$( realpath "${0}" )" )/main.py" | grep -v "grep" | wc -l ) -ge ${instances} ]]
+	if [[ $( pgrep -cf "piskvorky.*/main.py" ) -ge ${instances} ]]
 	then
 		echo "Playing too much games in same time, waiting..."
 		sleep 30
@@ -19,6 +19,6 @@ do
 		sleep 30
 		continue
 	fi
-	python3 "$( dirname "$( realpath "${0}" )" )/main.py" & 2>&1 1>"/tmp/${RANDOM}"
+	python3 "$( dirname "$( realpath "${0}" )" )/main.py" 1>"/tmp/piskv_game_${RANDOM}.log" 2>&1 &
 	sleep 30
 done
