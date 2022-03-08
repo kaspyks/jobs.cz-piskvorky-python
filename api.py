@@ -154,7 +154,7 @@ def req(uri, u_token, g_token="", next_hit=""):
             domain = "https://piskvorky.jobs.cz/api/v1/"
             req_res = requests.post(domain + uri, headers=headers, json=json_data).json()
             return req_res
-        except requests.ConnectionError:
+        except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError):
             sleep(2)
 
 
