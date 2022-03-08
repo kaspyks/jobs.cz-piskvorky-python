@@ -7,7 +7,12 @@ do
 	if [[ $( pgrep -cf "piskvorky.*/main.py" ) -ge ${instances} ]]
 	then
 		echo "Playing too much games in same time, waiting..."
-		sleep 30
+		if [[ ${instances} -eq 0 ]]
+		then
+			sleep 120
+		else
+			sleep 30
+		fi
 		continue
 	fi
 
