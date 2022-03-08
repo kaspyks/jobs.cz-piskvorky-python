@@ -60,9 +60,11 @@ def edit_game_dict(res, game, grid):
 def init_game(conn, u_token, args):
     print('Init game')
     cur = conn.cursor()
-    if not cur.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='games';"):
+    table_games_exists = cur.execute(
+        "SELECT tableName FROM sqlite_master WHERE type='table' AND name='games';").fetchall()
+    if not table_games_exists:
         cur.execute("CREATE TABLE games (gID VARCHAR (50), gToken VARCHAR (50), status VARCHAR (50), tries INTEGER, \
-        UNIQUE (gID, gToken));")
+            UNIQUE (gID, gToken));")
         conn.commit()
     if len(args) > 1:
         cur.execute("SELECT gToken FROM games WHERE gID = ?;", [args[1]])
