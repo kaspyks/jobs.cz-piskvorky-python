@@ -167,6 +167,7 @@ def send_hit(conn, g_token, u_token, u_id, opp_id, next_hit, game, grid):
         # print(res)  # smazat po devu
 
         if res['statusCode'] < 220:
+            print('Hit sent')
             game = edit_game_dict(res, game, grid)
             return game
         elif res['statusCode'] == 226:

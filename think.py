@@ -40,21 +40,21 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 					if a_s[-1] == 1:
 						if a_s[4] == 1:  # no. 6
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
-						if a_s[4] == opponent:  # no. 8
-							dir_score = count_dir_score(dir_score, actual, u_id, 150, 150)
+						if a_s[4] == opponent:  # no. 10
+							dir_score = count_dir_score(dir_score, actual, u_id, 100, 150)
 				if a_s[-1] == actual:
 					if a_s[-2] == actual:  # no. 5
 						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
 					if a_s[3] == 1:
-						if a_s[-2] == 1:  # no. 10
+						if a_s[-2] == 1:  # no. 8
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
 						if a_s[-2] == opponent:  # no. 12
-							dir_score = count_dir_score(dir_score, actual, u_id, 150, 150)
+							dir_score = count_dir_score(dir_score, actual, u_id, 100, 70)
 					if a_s[-2] == 1 and a_s[3] == opponent:  # no. 14
-						dir_score = count_dir_score(dir_score, actual, u_id, 150, 150)
+						dir_score = count_dir_score(dir_score, actual, u_id, 100, 120)
 				if a_s[3] == 1:
 					if a_s[-1] == 1:  # no. 16
-						dir_score = count_dir_score(dir_score, actual, u_id, 250, 190)
+						dir_score = count_dir_score(dir_score, actual, u_id, 450, 300)
 					if a_s[-1] == opponent:  # no. 19
 						dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
 				if a_s[3] == opponent and a_s[-1] == 1:  # no. 22
@@ -62,6 +62,8 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 			if a_s[2] == 1:
 				if a_s[-1] == 1:  # no. 25
 					dir_score = count_dir_score(dir_score, actual, u_id, 11, 10)
+					if a_s[-2] == actual and a_s[-3] == 1:  # no. 35
+						dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
 				if a_s[-1] == opponent:  # no. 27
 					dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
 				if a_s[3] == actual and a_s[-1] == 1 and a_s[4] == 1:   # no. 33
@@ -77,19 +79,19 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 					if a_s[1] == 1:
 						if a_s[-4] == 1:  # no. 7
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
-						if a_s[-4] == opponent:  # no. 9
-							dir_score = count_dir_score(dir_score, actual, u_id, 150, 150)
+						if a_s[-4] == opponent:  # no. 11
+							dir_score = count_dir_score(dir_score, actual, u_id, 100, 150)
 				if a_s[1] == actual:
 					if a_s[-3] == 1:
-						if a_s[2] == 1:  # no. 11
+						if a_s[2] == 1:  # no. 9
 							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
 						if a_s[2] == opponent:  # no. 13
-							dir_score = count_dir_score(dir_score, actual, u_id, 150, 150)
+							dir_score = count_dir_score(dir_score, actual, u_id, 100, 70)
 					if a_s[-3] == opponent and a_s[2] == 1:  # no. 15
-						dir_score = count_dir_score(dir_score, actual, u_id, 150, 150)
+						dir_score = count_dir_score(dir_score, actual, u_id, 100, 120)
 				if a_s[1] == 1:
 					if a_s[-3] == 1:  # no. 18
-						dir_score = count_dir_score(dir_score, actual, u_id, 250, 190)
+						dir_score = count_dir_score(dir_score, actual, u_id, 450, 300)
 					if a_s[-3] == opponent:  # no. 21
 						dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
 				if a_s[1] == opponent and a_s[-3] == 1:  # no. 24
@@ -97,6 +99,8 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 			if a_s[1] == 1:
 				if a_s[-2] == 1:  # no. 26
 					dir_score = count_dir_score(dir_score, actual, u_id, 11, 10)
+					if a_s[2] == actual and a_s[3] == 1:  # no. 36
+						dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
 				if a_s[-2] == opponent:  # no. 28
 					dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
 			if a_s[1] == opponent and a_s[-2] == 1:  # no. 30
@@ -107,7 +111,7 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 		if a_s[1] == actual and a_s[-1] == actual:
 			if a_s[2] == 1:
 				if a_s[-2] == 1:  # no. 17
-					dir_score = count_dir_score(dir_score, actual, u_id, 250, 190)
+					dir_score = count_dir_score(dir_score, actual, u_id, 450, 300)
 				if a_s[-2] == opponent:  # no. 20
 					dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
 			if a_s[2] == opponent and a_s[-2] == 1:  # no. 23
@@ -121,9 +125,9 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 
 	if score < 500 and actual == u_id:
 		ssc = dict()
-		for i in range(-4, 5):
+		for i in range(-5, 5):
 			ssc[i] = dict()
-			for j in range(-4, 5):
+			for j in range(-5, 5):
 				ssc[i][j] = square_state_custom(game, x, y, i, j, grid, opponent)
 
 		for i in (1, -1):
@@ -398,6 +402,86 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
 				and (ssc[3 * i][-1 * i] == 1 or ssc[3 * i][-1 * i] == actual) \
 				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual):  # no. 134
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
+				and ssc[-2 * i][0] == actual and ssc[-3 * i][1 * i] == actual \
+				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
+				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
+				and (ssc[-4 * i][2 * i] == 1 or ssc[-4 * i][2 * i] == actual) \
+				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual):  # no. 135
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
+				and ssc[0][2 * i] == actual and ssc[-1 * i][3 * i] == actual \
+				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
+				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
+				and (ssc[-2 * i][4 * i] == 1 or ssc[-2 * i][4 * i] == actual) \
+				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual):  # no. 136
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
+				and ssc[2 * i][-1 * i] == actual and ssc[2 * i][-2 * i] == actual \
+				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
+				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
+				and (ssc[2 * i][1 * i] == 1 or ssc[2 * i][1 * i] == actual) \
+				and (ssc[2 * i][-3 * i] == 1 or ssc[2 * i][-3 * i] == actual):  # no. 137
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) and ssc[-1 * i][0] == actual \
+				and ssc[-2 * i][-1 * i] == actual and ssc[-2 * i][-2 * i] == actual \
+				and (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) \
+				and (ssc[-3 * i][0] == 1 or ssc[-3 * i][0] == actual) \
+				and (ssc[-2 * i][1 * i] == 1 or ssc[-2 * i][1 * i] == actual) \
+				and (ssc[-2 * i][-3 * i] == 1 or ssc[-2 * i][-3 * i] == actual):  # no. 138
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
+				and ssc[1 * i][-3 * i] == actual and ssc[0][-4 * i] == actual \
+				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
+				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
+				and (ssc[-1 * i][5 * i] == 1 or ssc[-1 * i][5 * i] == actual) \
+				and (ssc[3 * i][-1 * i] == 1 or ssc[3 * i][-1 * i] == actual):  # no. 139
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
+				and ssc[3 * i][-1 * i] == actual and ssc[4 * i][0] == actual \
+				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
+				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
+				and (ssc[5 * i][1 * i] == 1 or ssc[5 * i][1 * i] == actual) \
+				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual):  # no. 140
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
+				and ssc[-1 * i][-2 * i] == actual and ssc[-2 * i][-2 * i] == actual \
+				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
+				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
+				and (ssc[-3 * i][-2 * i] == 1 or ssc[-3 * i][-2 * i] == actual) \
+				and (ssc[1 * i][-2 * i] == 1 or ssc[1 * i][-2 * i] == actual):  # no. 141
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
+				and ssc[1 * i][-2 * i] == actual and ssc[2 * i][-2 * i] == actual \
+				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
+				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
+				and (ssc[3 * i][-2 * i] == 1 or ssc[3 * i][-2 * i] == actual) \
+				and (ssc[-1 * i][-2 * i] == 1 or ssc[-1 * i][-2 * i] == actual):  # no. 142
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
+				and ssc[-3 * i][-1 * i] == actual and ssc[-4 * i][0] == actual \
+				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
+				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
+				and (ssc[-5 * i][1 * i] == 1 or ssc[-5 * i][1 * i] == actual) \
+				and (ssc[-1 * i][-3 * i] == 1 or ssc[-1 * i][-3 * i] == actual):  # no. 143
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) and ssc[1 * i][1 * i] == actual \
+				and ssc[1 * i][3 * i] == actual and ssc[0][4 * i] == actual \
+				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
+				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
+				and (ssc[-1 * i][5 * i] == 1 or ssc[-1 * i][5 * i] == actual) \
+				and (ssc[3 * i][1 * i] == 1 or ssc[3 * i][1 * i] == actual):  # no. 144
 				score = count_dir_score(score, actual, u_id, 500, 0)
 				return score
 	return score
