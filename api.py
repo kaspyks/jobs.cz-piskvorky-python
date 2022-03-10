@@ -151,9 +151,9 @@ def req(uri, u_token, g_token="", next_hit=""):
         json_data.update({"positionX": next_hit[0]})
         json_data.update({"positionY": next_hit[1]})
 
+    domain = "https://piskvorky.jobs.cz/api/v1/"
     while True:
         try:
-            domain = "https://piskvorky.jobs.cz/api/v1/"
             req_res = requests.post(domain + uri, headers=headers, json=json_data).json()
             return req_res
         except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError):

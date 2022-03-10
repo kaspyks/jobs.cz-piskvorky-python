@@ -125,9 +125,9 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 
 	if score < 500 and actual == u_id:
 		ssc = dict()
-		for i in range(-5, 5):
+		for i in range(-6, 6):
 			ssc[i] = dict()
-			for j in range(-5, 5):
+			for j in range(-6, 6):
 				ssc[i][j] = square_state_custom(game, x, y, i, j, grid, opponent)
 
 		for i in (1, -1):
