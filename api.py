@@ -106,6 +106,7 @@ def last_hit(conn, g_token, u_token, u_id, game, grid):
                 i += 1
                 continue
             else:
+                print("Opponent hit [" + str(res['coordinates'][0]['x']) + ", " + str(res['coordinates'][0]['y']) + "]")
                 game = edit_game_dict(res, game, grid)
                 return game
         elif res['statusCode'] == 226:

@@ -6,6 +6,7 @@ import random
 def check_square(game, grid, x, y, actual, opponent, u_id):
 	max_position = 4
 	score = 0
+	hardening = 0
 	for direction in (0, 1, 2, 3):
 		a_s = dict()  # actual_situation
 		dir_score = 0
@@ -15,6 +16,7 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 				if not a_s[position * i]:
 					a_s[position * i] = 1
 
+		# skip row where it's not possible to create 5 in row
 		opponent_square_positive = 0
 		opponent_square_negative = 0
 		free_squares = 1
@@ -39,22 +41,26 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
 					if a_s[-1] == 1:
 						if a_s[4] == 1:  # no. 6
-							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
+							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
 						if a_s[4] == opponent:  # no. 10
 							dir_score = count_dir_score(dir_score, actual, u_id, 100, 150)
+							hardening += 1
 				if a_s[-1] == actual:
 					if a_s[-2] == actual:  # no. 5
 						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
 					if a_s[3] == 1:
 						if a_s[-2] == 1:  # no. 8
-							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
+							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
 						if a_s[-2] == opponent:  # no. 12
 							dir_score = count_dir_score(dir_score, actual, u_id, 100, 70)
+							hardening += 1
 					if a_s[-2] == 1 and a_s[3] == opponent:  # no. 14
 						dir_score = count_dir_score(dir_score, actual, u_id, 100, 120)
+						hardening += 1
 				if a_s[3] == 1:
 					if a_s[-1] == 1:  # no. 16
-						dir_score = count_dir_score(dir_score, actual, u_id, 450, 300)
+						dir_score = count_dir_score(dir_score, actual, u_id, 390, 300)
+						hardening += 1
 					if a_s[-1] == opponent:  # no. 19
 						dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
 				if a_s[3] == opponent and a_s[-1] == 1:  # no. 22
@@ -64,10 +70,12 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 					dir_score = count_dir_score(dir_score, actual, u_id, 11, 10)
 					if a_s[-2] == actual and a_s[-3] == 1:  # no. 35
 						dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
+						hardening += 1
 				if a_s[-1] == opponent:  # no. 27
 					dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
 				if a_s[3] == actual and a_s[-1] == 1 and a_s[4] == 1:   # no. 33
 					dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
+					hardening += 1
 			if a_s[2] == opponent and a_s[-1] == 1:  # no. 29
 				dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
 
@@ -78,20 +86,24 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
 					if a_s[1] == 1:
 						if a_s[-4] == 1:  # no. 7
-							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
+							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
 						if a_s[-4] == opponent:  # no. 11
 							dir_score = count_dir_score(dir_score, actual, u_id, 100, 150)
+							hardening += 1
 				if a_s[1] == actual:
 					if a_s[-3] == 1:
 						if a_s[2] == 1:  # no. 9
-							dir_score = count_dir_score(dir_score, actual, u_id, 1100, 1000)
+							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
 						if a_s[2] == opponent:  # no. 13
 							dir_score = count_dir_score(dir_score, actual, u_id, 100, 70)
+							hardening += 1
 					if a_s[-3] == opponent and a_s[2] == 1:  # no. 15
 						dir_score = count_dir_score(dir_score, actual, u_id, 100, 120)
+						hardening += 1
 				if a_s[1] == 1:
 					if a_s[-3] == 1:  # no. 18
-						dir_score = count_dir_score(dir_score, actual, u_id, 450, 300)
+						dir_score = count_dir_score(dir_score, actual, u_id, 390, 300)
+						hardening += 1
 					if a_s[-3] == opponent:  # no. 21
 						dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
 				if a_s[1] == opponent and a_s[-3] == 1:  # no. 24
@@ -101,27 +113,37 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 					dir_score = count_dir_score(dir_score, actual, u_id, 11, 10)
 					if a_s[2] == actual and a_s[3] == 1:  # no. 36
 						dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
+						hardening += 1
 				if a_s[-2] == opponent:  # no. 28
 					dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
 			if a_s[1] == opponent and a_s[-2] == 1:  # no. 30
 				dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
 			if a_s[-2] == 1 and a_s[-3] == actual and a_s[1] == 1 and a_s[-4] == 1:  # no. 34
 				dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
+				hardening += 1
 
 		if a_s[1] == actual and a_s[-1] == actual:
 			if a_s[2] == 1:
 				if a_s[-2] == 1:  # no. 17
-					dir_score = count_dir_score(dir_score, actual, u_id, 450, 300)
+					dir_score = count_dir_score(dir_score, actual, u_id, 390, 300)
+					hardening += 1
 				if a_s[-2] == opponent:  # no. 20
 					dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
 			if a_s[2] == opponent and a_s[-2] == 1:  # no. 23
 				dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
 		if a_s[1] == 1 and a_s[2] == actual and a_s[3] == actual and a_s[-1] == 1 and a_s[4] == 1:  # no. 31
 			dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
+			hardening += 1
 		if a_s[-1] == 1 and a_s[-2] == actual and a_s[-3] == actual and a_s[1] == 1 and a_s[-4] == 1:  # no. 32
 			dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
+			hardening += 1
 
 		score += dir_score
+
+	if hardening > 1:
+		score = score * hardening
+		print("X: " + str(x) + ", Y: " + str(y) + ", Hardening: " + str(hardening))
+
 
 	if score < 500 and actual == u_id:
 		ssc = dict()
