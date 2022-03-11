@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from tkinter import *
-import time
+from PyQt5.QtWidgets import *
+from time import sleep
 import sqlite3
 from sqlite3 import Error
 import sys
@@ -26,7 +26,7 @@ def get_data(u_token, g_token):
         # print(res)  # smazat po devu
 
         if res['statusCode'] < 400:
-            return res['coordinates']
+            return res
         elif res['statusCode'] == 429:
             sleep(3)
         else:
@@ -36,6 +36,14 @@ def get_data(u_token, g_token):
 def get_script_path():
     return os.path.dirname(os.path.realpath(sys.argv[0]))
 
+
+def set_column(grid, grid_layout, w, label, x, y, val):
+    grid_layout.removeWidget(label[x][y])
+    label[x][y].deleteLater()
+    label[x][y].widget_name = None
+    label[x][y] = QLabel(str(val), w)
+    label[x][y].setStyleSheet("border-top: 1px solid black;border-right: 1px solid black;")
+    grid_layout.addWidget(label[x][y], 1 + abs(grid['y'][0]) - x, y + abs(grid['x'][0]))
 
 def sqlite_connect(db_file):
     conn = None
@@ -55,24 +63,46 @@ def main():
     conn = sqlite_connect(get_script_path() + "/centralDB.db")
     g_token = get_g_token(conn, str(sys.argv[1]))
     data_list = get_data(u_token, g_token)
-    actual_position = len(data_list)
+    actual_position = last_position = len(data_list)
 
-    window = Tk()
-    # take the data
-    lst = [(1, 'Raj', 'Mumbai', 19),
-           (2, 'Aaryan', 'Pune', 18),
-           (3, 'Vaishnavi', 'Mumbai', 20),
-           (4, 'Rachna', 'Mumbai', 21),
-           (5, 'Shubham', 'Delhi', 21)]
+    app = QApplication(sys.argv)
 
-    # create root window
+    w = QWidget()
+    grid_layout = QGridLayout()
+    grid_layout.setSpacing(0)
+    w.setLayout(grid_layout)
+    w.move(300, 300)
+    label = dict()
+    for i in range(abs(grid['y'][0]) + grid['y'][1] + 1):
+        i_real = grid['y'][1] - i
+        label[i_real] = dict()
+        for j in range(abs(grid['x'][0]) + grid['x'][1] + 1):
+            j_real = j + grid['x'][0]
+            label[i_real][j_real] = QLabel("   ", w)
+            if i == (abs(grid['y'][0]) + grid['y'][1]) and j == 0:
+                label[i_real][j_real].setStyleSheet("border-bottom: 1px solid black; border-right: 1px solid black; \
+                                    border-top: 1px solid black; border-left: 1px solid black;")
+            elif i == (abs(grid['y'][0]) + grid['y'][1]) and j != 0:
+                label[i_real][j_real].setStyleSheet("border-top: 1px solid black; border-right: 1px solid black; \
+                                    border-bottom: 1px solid black;")
+            elif i != (abs(grid['y'][0]) + grid['y'][1]) and j == 0:
+                label[i_real][j_real].setStyleSheet("border-top: 1px solid black; border-right: 1px solid black; \
+                                    border-left: 1px solid black;")
+            else:
+                label[i_real][j_real].setStyleSheet("border-top: 1px solid black;border-right: 1px solid black;")
+            grid_layout.addWidget(label[i_real][j_real], i, j)
 
-    for i in range(grid['y'][1] + abs(grid['y'][0]) + 1):
-        for j in range(grid['x'][1] + abs(grid['x'][0]) + 1):
-            e = Entry(window, width=3, fg='blue',
-                           font=('Arial', 16, 'bold'))
-            e.grid(row=i, column=j)
-            e.insert(END, str(i) + str(j))
 
-    window.mainloop()
+    for data in data_list['coordinates']:
+        x = data['y']
+        y = data['x']
+        if data['playerId'] == data_list['playerCircleId']:
+            val = 0
+        else:
+            val = 1
+        set_column(grid, grid_layout, w, label, x, y, val)
+
+    w.setWindowTitle('Piskvorky review')
+    w.show()
+    sys.exit(app.exec_())
 main()
