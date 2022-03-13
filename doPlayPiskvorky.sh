@@ -3,8 +3,8 @@
 # robot-honza: 97fcaf02-ebd8-4a93-9252-cad52f9a8a1f
 while true
 do
-	instances=$(cat "$( dirname "$( realpath "${0}" )" )/AUTO-INSTANCES")
-	if [[ $( pgrep -cf "piskvorky.*/main.py" ) -ge ${instances} ]]
+	instances=$(cat "$( dirname "$( realpath "${0}" )" )/AUTO-INSTANCES" 2>/dev/null)
+	if [[ ! -f "$( dirname "$( realpath "${0}" )" )/AUTO-INSTANCES" || $( pgrep -cf "piskvorky.*/main.py" ) -ge ${instances} ]]
 	then
 		echo "Playing too much games in same time, waiting..."
 		if [[ ${instances} -eq 0 ]]
