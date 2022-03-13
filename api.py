@@ -67,34 +67,35 @@ def init_game(conn, u_token, args):
         UNIQUE (gID, gToken));")
         conn.commit()
     if len(args) > 1:
-        cur.execute("SELECT gToken FROM games WHERE gID = ?;", [args[1]])
+        cur.execute("SELECT gID, gToken FROM games WHERE gID = ?;", [args[1]])
         row = cur.fetchone()
         if row:
-            return row[0]
+            return [row[0], row[1]]
         else:
             print("Wrong Game ID... Bye")
             exit()
 
     res = req("connect", u_token)
-    # print(res)  # pak smazat
     if res['statusCode'] < 400:
         g_token = res['gameToken']
         g_id = res['gameId']
+        print("python3 main.py " + g_id)
         cur.execute("INSERT INTO games ( gID, gToken, status ) VALUES (?, ?, 'waiting')", [g_id, g_token])
+        sql_prepare = "CREATE TABLE `{}` (id INTEGER PRIMARY KEY AUTOINCREMENT, data VARCHAR (5000));".format(g_id)
+        cur.execute(sql_prepare)
         conn.commit()
         print("python3 main.py " + g_id)
-        return g_token
+        return [g_id, g_token]
     else:
         print("Something is wrong...")
         print(str(res))
         exit()
 
 
-def last_hit(conn, g_token, u_token, u_id, game, grid):
+def last_hit(conn, g_id, g_token, u_token, u_id, game, grid):
     i = 0
     while True:
         res = req("checkLastStatus", u_token, g_token)
-        # print(res)  # smazat po devu
 
         if res['statusCode'] < 220:
             if res['actualPlayerId'] != u_id:
@@ -106,7 +107,13 @@ def last_hit(conn, g_token, u_token, u_id, game, grid):
                 i += 1
                 continue
             else:
-                print("Opponent hit [" + str(res['coordinates'][0]['x']) + ", " + str(res['coordinates'][0]['y']) + "]")
+                if res['coordinates']:
+                    print("Opponent hit [" + str(res['coordinates'][0]['x']) + ", "
+                          + str(res['coordinates'][0]['y']) + "]")
+                    cur = conn.cursor()
+                    sql_prepare = "INSERT INTO `{}` ( data ) VALUES (?)".format(g_id)
+                    cur.execute(sql_prepare, [str(res)])
+                    conn.commit()
                 game = edit_game_dict(res, game, grid)
                 return game
         elif res['statusCode'] == 226:
@@ -127,7 +134,6 @@ def regenerate_db(u_token, g_token, grid):
     game = dict()
     while True:
         res = req("checkStatus", u_token, g_token)
-        # print(res)  # smazat po devu
 
         if res['statusCode'] < 400:
             game = edit_game_dict(res, game, grid)
@@ -161,13 +167,17 @@ def req(uri, u_token, g_token="", next_hit=""):
             sleep(2)
 
 
-def send_hit(conn, g_token, u_token, u_id, opp_id, next_hit, game, grid):
-    print('Send my hit ' + str(next_hit))
+def send_hit(conn, g_id, g_token, u_token, u_id, opp_id, think_return, game, grid):
+    print('Send my hit ' + str(think_return[0]))
     while True:
-        res = req("play", u_token, g_token, next_hit)
-        # print(res)  # smazat po devu
+        res = req("play", u_token, g_token, think_return[0])
 
         if res['statusCode'] < 220:
+            cur = conn.cursor()
+            res['coordinates'][0]['score'] = think_return[1]
+            sql_prepare = "INSERT INTO `{}` ( data ) VALUES (?)".format(g_id)
+            cur.execute(sql_prepare, [str(res)])
+            conn.commit()
             print('Hit sent')
             game = edit_game_dict(res, game, grid)
             return game
@@ -181,13 +191,12 @@ def send_hit(conn, g_token, u_token, u_id, opp_id, next_hit, game, grid):
             print(res)
             sleep(1)
             game = regenerate_db(u_token, g_token, grid)
-            next_hit = think.thinking(game, grid, u_id, opp_id)
+            think_return = think.thinking(game, grid, u_id, opp_id)
 
 
 def waiting(conn, u_token, g_token, u_id):
     while True:
         res = req("checkLastStatus", u_token, g_token)
-        # print(res)  # smazat po devu
 
         if res['statusCode'] < 220:
             if not res['playerCircleId'] or not res['playerCrossId']:

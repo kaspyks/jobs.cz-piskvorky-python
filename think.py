@@ -144,7 +144,6 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 		score = score * hardening
 		print("X: " + str(x) + ", Y: " + str(y) + ", Hardening: " + str(hardening))
 
-
 	if score < 500 and actual == u_id:
 		ssc = dict()
 		for i in range(-6, 6):
@@ -560,7 +559,7 @@ def thinking(game, grid, u_id, opp_id):
 	if len(game) == 0:
 		res.append(random.randrange(grid['x'][0] + 25, grid['x'][1] - 25, 3))
 		res.append(random.randrange(grid['y'][0] + 15, grid['y'][1] - 15, 3))
-		return res
+		return [res, 0]
 
 	score_list = list()
 	for x, line in game.items():
@@ -571,7 +570,7 @@ def thinking(game, grid, u_id, opp_id):
 				score = score + check_square(game, grid, x, y, opp_id, u_id, u_id)
 				score_list.append({'x': x, 'y': y, 'score': score})
 	scores_sorted = sorted(score_list, key=lambda d: d['score'], reverse=True)
-	print(scores_sorted)
+	# print(scores_sorted)
 	res_scores = list()
 	for i in scores_sorted:
 		if i['score'] == scores_sorted[0]['score']:
@@ -579,4 +578,4 @@ def thinking(game, grid, u_id, opp_id):
 	random.shuffle(res_scores)
 	res.append(res_scores[0]['x'])
 	res.append(res_scores[0]['y'])
-	return res
+	return [res, res_scores[0]['score']]
