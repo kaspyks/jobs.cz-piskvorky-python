@@ -162,6 +162,9 @@ def req(uri, u_token, g_token="", next_hit=""):
     while True:
         try:
             req_res = requests.post(domain + uri, headers=headers, json=json_data).json()
+            if "statusCode" not in req_res:
+                sleep(1)
+                continue
             return req_res
         except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError):
             sleep(2)
