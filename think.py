@@ -505,6 +505,206 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 				and (ssc[3 * i][1 * i] == 1 or ssc[3 * i][1 * i] == actual):  # no. 208
 				score = count_dir_score(score, actual, u_id, 500, 0)
 				return score
+			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[-1 * i][0] == actual \
+				and ssc[0][1 * i] == actual and ssc[2 * i][-1 * i] == actual \
+				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
+				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
+				and (ssc[-1 * i][2 * i] == 1 or ssc[-1 * i][2 * i] == actual) \
+				and (ssc[3 * i][-2 * i] == 1 or ssc[3 * i][-2 * i] == actual):  # no. 209
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[-1 * i][0] == actual \
+				and ssc[0][-1 * i] == actual and ssc[2 * i][1 * i] == actual \
+				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
+				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
+				and (ssc[-1 * i][-2 * i] == 1 or ssc[-1 * i][-2 * i] == actual) \
+				and (ssc[3 * i][2 * i] == 1 or ssc[3 * i][2 * i] == actual):  # no. 210
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[-1 * i][1 * i] == actual \
+				and ssc[1 * i][0] == actual and ssc[1 * i][-2 * i] == actual \
+				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
+				and (ssc[-2 * i][2 * i] == 1 or ssc[-2 * i][2 * i] == actual) \
+				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
+				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual):  # no. 211
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[-1 * i][1 * i] == actual \
+				and ssc[0][-1 * i] == actual and ssc[2 * i][-1 * i] == actual \
+				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
+				and (ssc[-2 * i][2 * i] == 1 or ssc[-2 * i][2 * i] == actual) \
+				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
+				and (ssc[3 * i][-1 * i] == 1 or ssc[3 * i][-1 * i] == actual):  # no. 212
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][1 * i] == actual \
+				and ssc[1 * i][0] == actual and ssc[-1 * i][-2 * i] == actual \
+				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
+				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
+				and (ssc[2 * i][1 * i] == 1 or ssc[2 * i][1 * i] == actual) \
+				and (ssc[-2 * i][-3 * i] == 1 or ssc[-2 * i][-3 * i] == actual):  # no. 213
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][1 * i] == actual \
+				and ssc[-1 * i][0] == actual and ssc[1 * i][-2 * i] == actual \
+				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
+				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
+				and (ssc[-2 * i][1 * i] == 1 or ssc[-2 * i][1 * i] == actual) \
+				and (ssc[2 * i][-3 * i] == 1 or ssc[2 * i][-3 * i] == actual):  # no. 214
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
+				and ssc[0][-1 * i] == actual and ssc[-2 * i][-1 * i] == actual \
+				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
+				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
+				and (ssc[-3 * i][-1 * i] == 1 or ssc[-3 * i][-1 * i] == actual) \
+				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual):  # no. 215
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
+				and ssc[-1 * i][0] == actual and ssc[-1 * i][-2 * i] == actual \
+				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
+				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
+				and (ssc[-1 * i][-3 * i] == 1 or ssc[-1 * i][-3 * i] == actual) \
+				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual):  # no. 216
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
+				and ssc[1 * i][1 * i] == actual and ssc[3 * i][-1 * i] == actual \
+				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
+				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
+				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
+				and (ssc[4 * i][-2 * i] == 1 or ssc[4 * i][-2 * i] == actual):  # no. 217
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
+				and ssc[1 * i][-1 * i] == actual and ssc[3 * i][1 * i] == actual \
+				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
+				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
+				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
+				and (ssc[4 * i][2 * i] == 1 or ssc[4 * i][2 * i] == actual):  # no. 218
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
+				and ssc[2 * i][-1 * i] == actual and ssc[2 * i][-3 * i] == actual \
+				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
+				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
+				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
+				and (ssc[2 * i][-4 * i] == 1 or ssc[2 * i][-4 * i] == actual):  # no. 219
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
+				and ssc[1 * i][-2 * i] == actual and ssc[3 * i][-2 * i] == actual \
+				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
+				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
+				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
+				and (ssc[4 * i][-2 * i] == 1 or ssc[4 * i][-2 * i] == actual):  # no. 220
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
+				and ssc[1 * i][-1 * i] == actual and ssc[-1 * i][-3 * i] == actual \
+				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
+				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
+				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
+				and (ssc[-2 * i][-4 * i] == 1 or ssc[-2 * i][-4 * i] == actual):  # no. 221
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
+				and ssc[-1 * i][-1 * i] == actual and ssc[1 * i][-3 * i] == actual \
+				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
+				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
+				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
+				and (ssc[2 * i][-4 * i] == 1 or ssc[2 * i][-4 * i] == actual):  # no. 222
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
+				and ssc[-1 * i][-2 * i] == actual and ssc[-3 * i][-2 * i] == actual \
+				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
+				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
+				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
+				and (ssc[-4 * i][-2 * i] == 1 or ssc[-4 * i][-2 * i] == actual):  # no. 223
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
+				and ssc[-2 * i][-1 * i] == actual and ssc[-2 * i][-3 * i] == actual \
+				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
+				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
+				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
+				and (ssc[-2 * i][-4 * i] == 1 or ssc[-2 * i][-4 * i] == actual):  # no. 224
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) and ssc[-2 * i][-2 * i] == actual \
+				and ssc[-2 * i][1 * i] == actual and ssc[-3 * i][1 * i] == actual \
+				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) \
+				and (ssc[-3 * i][3 * i] == 1 or ssc[-3 * i][3 * i] == actual) \
+				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
+				and (ssc[-4 * i][1 * i] == 1 or ssc[-4 * i][1 * i] == actual):  # no. 225
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) and ssc[2 * i][2 * i] == actual \
+				and ssc[0][1 * i] == actual and ssc[-1 * i][1 * i] == actual \
+				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
+				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
+				and (ssc[2 * i][1 * i] == 1 or ssc[2 * i][1 * i] == actual) \
+				and (ssc[-2 * i][1 * i] == 1 or ssc[-2 * i][1 * i] == actual):  # no. 226
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) and ssc[0][2 * i] == actual \
+				and ssc[-1 * i][2 * i] == actual and ssc[-2 * i][3 * i] == actual \
+				and (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) \
+				and (ssc[0][3 * i] == 1 or ssc[0][3 * i] == actual) \
+				and (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) \
+				and (ssc[-3 * i][4 * i] == 1 or ssc[-3 * i][4 * i] == actual):  # no. 227
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[2 * i][0] == actual \
+				and ssc[0][1 * i] == actual and ssc[-1 * i][2 * i] == actual \
+				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
+				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
+				and (ssc[2 * i][-1 * i] == 1 or ssc[2 * i][-1 * i] == actual) \
+				and (ssc[-2 * i][3 * i] == 1 or ssc[-2 * i][3 * i] == actual):  # no. 228
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) and ssc[2 * i][2 * i] == actual \
+				and ssc[1 * i][2 * i] == actual and ssc[1 * i][3 * i] == actual \
+				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
+				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
+				and (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) \
+				and (ssc[1 * i][4 * i] == 1 or ssc[1 * i][4 * i] == actual):  # no. 229
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[2 * i][-2 * i] == actual \
+				and ssc[1 * i][0] == actual and ssc[1 * i][1 * i] == actual \
+				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
+				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
+				and (ssc[1 * i][2 * i] == 1 or ssc[1 * i][2 * i] == actual) \
+				and (ssc[1 * i][-2 * i] == 1 or ssc[1 * i][-2 * i] == actual):  # no. 230
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[2 * i][0] == actual \
+				and ssc[2 * i][1 * i] == actual and ssc[3 * i][2 * i] == actual \
+				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
+				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
+				and (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) \
+				and (ssc[4 * i][3 * i] == 1 or ssc[4 * i][3 * i] == actual):  # no. 231
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][-2 * i] == actual \
+				and ssc[1 * i][0] == actual and ssc[2 * i][1 * i] == actual \
+				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
+				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
+				and (ssc[-1 * i][-2 * i] == 1 or ssc[-1 * i][-2 * i] == actual) \
+				and (ssc[3 * i][2 * i] == 1 or ssc[3 * i][2 * i] == actual):  # no. 232
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
+			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[2 * i][-2 * i] == actual \
+				and ssc[0][-1 * i] == actual and ssc[-1 * i][-1 * i] == actual \
+				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
+				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
+				and (ssc[2 * i][-1 * i] == 1 or ssc[2 * i][-1 * i] == actual) \
+				and (ssc[-2 * i][-1 * i] == 1 or ssc[-2 * i][-1 * i] == actual):  # no. 233
+				score = count_dir_score(score, actual, u_id, 500, 0)
+				return score
 	return score
 
 
