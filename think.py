@@ -151,21 +151,20 @@ def check_square(game, grid, x, y, actual, opponent, u_id):
 			for j in range(-6, 6):
 				ssc[i][j] = square_state_custom(game, x, y, i, j, grid, opponent)
 
+		a = actual
 		for i in (1, -1):
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[1 * i][1 * i] == actual \
-				and ssc[2 * i][0] == actual and ssc[1 * i][-1 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[1 * i][2 * i] == 1 or ssc[1 * i][2 * i] == actual) \
-				and (ssc[1 * i][-2 * i] == 1 or ssc[1 * i][-2 * i] == actual):  # no. 101
+			if ss(i, a, "b", 1, 0) and ss(i, a, "a", 1, 1) and ss(i, a, "a", 2, 0) and ss(i, a, "a", 1, -1) \
+				and (ss(i, a, "b", -1, 0) or ss(i, a, "b", 3, 0)) \
+				and (ss(i, a, "b", -1, 0) or ss(i, a, "b", 4, 0)) and (ss(i, a, "b", 3, 0) or ss(i, a, "b", -2, 0)) \
+				and (ss(i, a, "b", 1, 2) or ss(i, a, "b", 1, -2)) \
+				and (ss(i, a, "b", 1, 2) or ss(i, a, "b", 1, -3)) and (ss(i, a, "b", 1, -2) or ss(i, a, "b", 1, 3)):  # no. 101
 				score = count_dir_score(score, actual, u_id, 500, 0)
 				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[2 * i][0] == actual \
-				and ssc[2 * i][-2 * i] == actual and ssc[0][-2 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[3 * i][1 * i] == 1 or ssc[3 * i][1 * i] == actual) \
-				and (ssc[-1 * i][-3 * i] == 1 or ssc[-1 * i][-3 * i] == actual):  # no. 102
+			if ss(i, a, "b", 1, -1) and ss(i, a, "a", 2, 0) and ss(i, a, "a", 2, -2) and ss(i, a, "a", 0, -2) \
+				and (ss(i, a, "b", -1, 1) or ss(i, a, "b", 3, -3)) \
+				and (ss(i, a, "b", -1, 1) or ss(i, a, "b", 4, -4)) and (ss(i, a, "b", 3, -3) or ss(i, a, "b", -2, 2)) \
+				and (ss(i, a, "b", 3, 1) or ss(i, a, "b", -1, -3)) \
+				and (ss(i, a, "b", 3, 1) or ss(i, a, "b", -2, -4)) and (ss(i, a, "b", -1, -3) or ss(i, a, "b", 4, 2)):  # no. 102
 				score = count_dir_score(score, actual, u_id, 500, 0)
 				return score
 			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[1 * i][-1 * i] == actual \
@@ -750,6 +749,14 @@ def square_state_custom(game, x, y, move_x, move_y, grid, opponent):
 	if x + move_x in game and y + move_y in game[x + move_x]:
 		return game[x + move_x][y + move_y]
 	return 1
+
+
+def ss(i, actual, type, x, y):
+	# type ~ b ( both ), a ( actual )
+	if type == b:
+		return ssc[x * i][y * i] == 1 or ssc[x * i][y * i] == actual
+	elif type == a:
+		return ssc[x * i][y * i] == actual
 
 
 def thinking(game, grid, u_id, opp_id):

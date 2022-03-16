@@ -166,7 +166,7 @@ def req(uri, u_token, g_token="", next_hit=""):
                 sleep(1)
                 continue
             return req_res
-        except (requests.exceptions.ConnectionError, json.decoder.JSONDecodeError):
+        except (requests.exceptions.ConnectionError, ValueError, simplejson.errors.JSONDecodeError):
             sleep(2)
 
 
