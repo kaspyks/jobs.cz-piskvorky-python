@@ -3,786 +3,1160 @@
 import random
 
 
-def check_square(game, grid, x, y, actual, opponent, u_id):
-	max_position = 4
-	score = 0
-	hardening = 0
-	for direction in (0, 1, 2, 3):
-		a_s = dict()  # actual_situation
-		dir_score = 0
-		for position in range(1, max_position + 1):
-			for i in (1, -1):
-				a_s[position * i] = square_state(game, x, y, position * i, direction, grid, opponent)
-				if not a_s[position * i]:
-					a_s[position * i] = 1
+class Thinking:
+    def __init__(self, grid, g_data, u_id, u_token, opp_id):
+        self.grid = grid
+        self.g_id = g_data[0]
+        self.g_token = g_data[1]
+        self.u_id = u_id
+        self.u_token = u_token
+        self.opp_id = opp_id
+        self.game = dict()
+        self.x = 0
+        self.y = 0
+        self.actual = ""
+        self.opponent = ""
+        self.dir_score = 0
+        self.ssc = dict()
+        self.multiple = 0
 
-		# skip row where it's not possible to create 5 in row
-		opponent_square_positive = 0
-		opponent_square_negative = 0
-		free_squares = 1
-		for i in range(1, max_position + 1):
-			if opponent_square_positive == 0:
-				if a_s[i] == opponent:
-					opponent_square_positive = 1
-				else:
-					free_squares += 1
-			if opponent_square_negative == 0:
-				if a_s[i * (-1)] == opponent:
-					opponent_square_negative = 1
-				else:
-					free_squares += 1
-		if free_squares < 5:
-			continue
+    def check_square(self):
+        max_position = 4
+        score = 0
+        hardening = 0
+        for direction in (0, 1, 2, 3):
+            a_s = dict()  # actual_situation
+            self.dir_score = 0
+            for position in range(1, max_position + 1):
+                for i in (1, -1):
+                    a_s[position * i] = self.square_state(position * i, direction)
+                    if not a_s[position * i]:
+                        a_s[position * i] = 1
 
-		if a_s[1] == actual:
-			if a_s[2] == actual:
-				if a_s[3] == actual:
-					if a_s[4] == actual or a_s[-1] == actual:  # no. 1, no. 3
-						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
-					if a_s[-1] == 1:
-						if a_s[4] == 1:  # no. 6
-							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
-						if a_s[4] == opponent:  # no. 10
-							dir_score = count_dir_score(dir_score, actual, u_id, 100, 150)
-							hardening += 1
-				if a_s[-1] == actual:
-					if a_s[-2] == actual:  # no. 5
-						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
-					if a_s[3] == 1:
-						if a_s[-2] == 1:  # no. 8
-							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
-						if a_s[-2] == opponent:  # no. 12
-							dir_score = count_dir_score(dir_score, actual, u_id, 100, 70)
-							hardening += 1
-					if a_s[-2] == 1 and a_s[3] == opponent:  # no. 14
-						dir_score = count_dir_score(dir_score, actual, u_id, 100, 120)
-						hardening += 1
-				if a_s[3] == 1:
-					if a_s[-1] == 1:  # no. 16
-						dir_score = count_dir_score(dir_score, actual, u_id, 390, 300)
-						hardening += 1
-					if a_s[-1] == opponent:  # no. 19
-						dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
-				if a_s[3] == opponent and a_s[-1] == 1:  # no. 22
-					dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
-			if a_s[2] == 1:
-				if a_s[-1] == 1:  # no. 25
-					dir_score = count_dir_score(dir_score, actual, u_id, 11, 10)
-					if a_s[-2] == actual and a_s[-3] == 1:  # no. 35
-						dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
-						hardening += 1
-				if a_s[-1] == opponent:  # no. 27
-					dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
-				if a_s[3] == actual and a_s[-1] == 1 and a_s[4] == 1:   # no. 33
-					dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
-					hardening += 1
-			if a_s[2] == opponent and a_s[-1] == 1:  # no. 29
-				dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
+            # skip row where it's not possible to create 5 in row
+            opponent_square_positive = 0
+            opponent_square_negative = 0
+            free_squares = 1
+            for i in range(1, max_position + 1):
+                if opponent_square_positive == 0:
+                    if a_s[i] == self.opponent:
+                        opponent_square_positive = 1
+                    else:
+                        free_squares += 1
+                if opponent_square_negative == 0:
+                    if a_s[i * (-1)] == self.opponent:
+                        opponent_square_negative = 1
+                    else:
+                        free_squares += 1
+            if free_squares < 5:
+                continue
 
-		if a_s[-1] == actual:
-			if a_s[-2] == actual:
-				if a_s[-3] == actual:
-					if a_s[-4] == actual or a_s[1] == actual:  # no. 2, no. 4
-						dir_score = count_dir_score(dir_score, actual, u_id, 11000, 10000)
-					if a_s[1] == 1:
-						if a_s[-4] == 1:  # no. 7
-							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
-						if a_s[-4] == opponent:  # no. 11
-							dir_score = count_dir_score(dir_score, actual, u_id, 100, 150)
-							hardening += 1
-				if a_s[1] == actual:
-					if a_s[-3] == 1:
-						if a_s[2] == 1:  # no. 9
-							dir_score = count_dir_score(dir_score, actual, u_id, 1600, 1400)
-						if a_s[2] == opponent:  # no. 13
-							dir_score = count_dir_score(dir_score, actual, u_id, 100, 70)
-							hardening += 1
-					if a_s[-3] == opponent and a_s[2] == 1:  # no. 15
-						dir_score = count_dir_score(dir_score, actual, u_id, 100, 120)
-						hardening += 1
-				if a_s[1] == 1:
-					if a_s[-3] == 1:  # no. 18
-						dir_score = count_dir_score(dir_score, actual, u_id, 390, 300)
-						hardening += 1
-					if a_s[-3] == opponent:  # no. 21
-						dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
-				if a_s[1] == opponent and a_s[-3] == 1:  # no. 24
-					dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
-			if a_s[1] == 1:
-				if a_s[-2] == 1:  # no. 26
-					dir_score = count_dir_score(dir_score, actual, u_id, 11, 10)
-					if a_s[2] == actual and a_s[3] == 1:  # no. 36
-						dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
-						hardening += 1
-				if a_s[-2] == opponent:  # no. 28
-					dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
-			if a_s[1] == opponent and a_s[-2] == 1:  # no. 30
-				dir_score = count_dir_score(dir_score, actual, u_id, 2, 1)
-			if a_s[-2] == 1 and a_s[-3] == actual and a_s[1] == 1 and a_s[-4] == 1:  # no. 34
-				dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
-				hardening += 1
+            if a_s[1] == self.actual:
+                if a_s[2] == self.actual:
+                    if a_s[3] == self.actual:
+                        if a_s[4] == self.actual or a_s[-1] == self.actual:  # no. 1, no. 3
+                            self.count_dir_score(11000, 10000)
+                        if a_s[-1] == 1:
+                            if a_s[4] == 1:  # no. 6
+                                self.count_dir_score(1600, 1400)
+                            if a_s[4] == self.opponent:  # no. 10
+                                self.count_dir_score(100, 150)
+                                hardening += 1
+                    if a_s[-1] == self.actual:
+                        if a_s[-2] == self.actual:  # no. 5
+                            self.count_dir_score(11000, 10000)
+                        if a_s[3] == 1:
+                            if a_s[-2] == 1:  # no. 8
+                                self.count_dir_score(1600, 1400)
+                            if a_s[-2] == self.opponent:  # no. 12
+                                self.count_dir_score(100, 70)
+                                hardening += 1
+                        if a_s[-2] == 1 and a_s[3] == self.opponent:  # no. 14
+                            self.count_dir_score(100, 120)
+                            hardening += 1
+                    if a_s[3] == 1:
+                        if a_s[-1] == 1:  # no. 16
+                            self.count_dir_score(390, 300)
+                            hardening += 1
+                        if a_s[-1] == self.opponent:  # no. 19
+                            self.count_dir_score(40, 30)
+                    if a_s[3] == self.opponent and a_s[-1] == 1:  # no. 22
+                        self.count_dir_score(40, 30)
+                if a_s[2] == 1:
+                    if a_s[-1] == 1:  # no. 25
+                        self.count_dir_score(11, 10)
+                        if a_s[-2] == self.actual and a_s[-3] == 1:  # no. 35
+                            self.count_dir_score(240, 80)
+                            hardening += 1
+                    if a_s[-1] == self.opponent:  # no. 27
+                        self.count_dir_score(2, 1)
+                    if a_s[3] == self.actual and a_s[-1] == 1 and a_s[4] == 1:  # no. 33
+                        self.count_dir_score(240, 80)
+                        hardening += 1
+                if a_s[2] == self.opponent and a_s[-1] == 1:  # no. 29
+                    self.count_dir_score(2, 1)
 
-		if a_s[1] == actual and a_s[-1] == actual:
-			if a_s[2] == 1:
-				if a_s[-2] == 1:  # no. 17
-					dir_score = count_dir_score(dir_score, actual, u_id, 390, 300)
-					hardening += 1
-				if a_s[-2] == opponent:  # no. 20
-					dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
-			if a_s[2] == opponent and a_s[-2] == 1:  # no. 23
-				dir_score = count_dir_score(dir_score, actual, u_id, 40, 30)
-		if a_s[1] == 1 and a_s[2] == actual and a_s[3] == actual and a_s[-1] == 1 and a_s[4] == 1:  # no. 31
-			dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
-			hardening += 1
-		if a_s[-1] == 1 and a_s[-2] == actual and a_s[-3] == actual and a_s[1] == 1 and a_s[-4] == 1:  # no. 32
-			dir_score = count_dir_score(dir_score, actual, u_id, 240, 80)
-			hardening += 1
+            if a_s[-1] == self.actual:
+                if a_s[-2] == self.actual:
+                    if a_s[-3] == self.actual:
+                        if a_s[-4] == self.actual or a_s[1] == self.actual:  # no. 2, no. 4
+                            self.count_dir_score(11000, 10000)
+                        if a_s[1] == 1:
+                            if a_s[-4] == 1:  # no. 7
+                                self.count_dir_score(1600, 1400)
+                            if a_s[-4] == self.opponent:  # no. 11
+                                self.count_dir_score(100, 150)
+                                hardening += 1
+                    if a_s[1] == self.actual:
+                        if a_s[-3] == 1:
+                            if a_s[2] == 1:  # no. 9
+                                self.count_dir_score(1600, 1400)
+                            if a_s[2] == self.opponent:  # no. 13
+                                self.count_dir_score(100, 70)
+                                hardening += 1
+                        if a_s[-3] == self.opponent and a_s[2] == 1:  # no. 15
+                            self.count_dir_score(100, 120)
+                            hardening += 1
+                    if a_s[1] == 1:
+                        if a_s[-3] == 1:  # no. 18
+                            self.count_dir_score(390, 300)
+                            hardening += 1
+                        if a_s[-3] == self.opponent:  # no. 21
+                            self.count_dir_score(40, 30)
+                    if a_s[1] == self.opponent and a_s[-3] == 1:  # no. 24
+                        self.count_dir_score(40, 30)
+                if a_s[1] == 1:
+                    if a_s[-2] == 1:  # no. 26
+                        self.count_dir_score(11, 10)
+                        if a_s[2] == self.actual and a_s[3] == 1:  # no. 36
+                            self.count_dir_score(240, 80)
+                            hardening += 1
+                    if a_s[-2] == self.opponent:  # no. 28
+                        self.count_dir_score(2, 1)
+                if a_s[1] == self.opponent and a_s[-2] == 1:  # no. 30
+                    self.count_dir_score(2, 1)
+                if a_s[-2] == 1 and a_s[-3] == self.actual and a_s[1] == 1 and a_s[-4] == 1:  # no. 34
+                    self.count_dir_score(240, 80)
+                    hardening += 1
 
-		score += dir_score
+            if a_s[1] == self.actual and a_s[-1] == self.actual:
+                if a_s[2] == 1:
+                    if a_s[-2] == 1:  # no. 17
+                        self.count_dir_score(390, 300)
+                        hardening += 1
+                    if a_s[-2] == self.opponent:  # no. 20
+                        self.count_dir_score(40, 30)
+                if a_s[2] == self.opponent and a_s[-2] == 1:  # no. 23
+                    self.count_dir_score(40, 30)
+            if a_s[1] == 1 and a_s[2] == self.actual and a_s[3] == self.actual and a_s[-1] == 1 and a_s[
+                4] == 1:  # no. 31
+                self.count_dir_score(240, 80)
+                hardening += 1
+            if a_s[-1] == 1 and a_s[-2] == self.actual and a_s[-3] == self.actual and a_s[1] == 1 and a_s[
+                -4] == 1:  # no. 32
+                self.count_dir_score(240, 80)
+                hardening += 1
 
-	if hardening > 1:
-		score = score * hardening
-		print("X: " + str(x) + ", Y: " + str(y) + ", Hardening: " + str(hardening))
+            score += self.dir_score
+        if hardening > 1:
+            score = score * hardening
+            print("X: " + str(self.x) + ", Y: " + str(self.y) + ", Hardening: " + str(hardening))
 
-	if score < 500 and actual == u_id:
-		ssc = dict()
-		for i in range(-6, 6):
-			ssc[i] = dict()
-			for j in range(-6, 6):
-				ssc[i][j] = square_state_custom(game, x, y, i, j, grid, opponent)
+        self.dir_score = score
+        if self.dir_score < 500 and self.actual == self.u_id:
+            self.ssc = dict()
+            for i in range(-6, 6):
+                self.ssc[i] = dict()
+                for j in range(-6, 6):
+                    self.ssc[i][j] = self.square_state_custom(i, j)
 
-		a = actual
-		for i in (1, -1):
-			if ss(ssc, i, a, "b", 1, 0) and ss(ssc, i, a, "a", 1, 1) and ss(ssc, i, a, "a", 2, 0) and ss(ssc, i, a, "a", 1, -1) \
-				and (ss(ssc, i, a, "b", -1, 0) or ss(ssc, i, a, "b", 3, 0)) \
-				and (ss(ssc, i, a, "b", -1, 0) or ss(ssc, i, a, "b", 4, 0)) and (ss(ssc, i, a, "b", 3, 0) or ss(ssc, i, a, "b", -2, 0)) \
-				and (ss(ssc, i, a, "b", 1, 2) or ss(ssc, i, a, "b", 1, -2)) \
-				and (ss(ssc, i, a, "b", 1, 2) or ss(ssc, i, a, "b", 1, -3)) and (ss(ssc, i, a, "b", 1, -2) or ss(ssc, i, a, "b", 1, 3)):  # no. 101
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if ss(ssc, i, a, "b", 1, -1) and ss(ssc, i, a, "a", 2, 0) and ss(ssc, i, a, "a", 2, -2) and ss(ssc, i, a, "a", 0, -2) \
-				and (ss(ssc, i, a, "b", -1, 1) or ss(ssc, i, a, "b", 3, -3)) \
-				and (ss(ssc, i, a, "b", -1, 1) or ss(ssc, i, a, "b", 4, -4)) and (ss(ssc, i, a, "b", 3, -3) or ss(ssc, i, a, "b", -2, 2)) \
-				and (ss(ssc, i, a, "b", 3, 1) or ss(ssc, i, a, "b", -1, -3)) \
-				and (ss(ssc, i, a, "b", 3, 1) or ss(ssc, i, a, "b", -2, -4)) and (ss(ssc, i, a, "b", -1, -3) or ss(ssc, i, a, "b", 4, 2)):  # no. 102
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[1 * i][-1 * i] == actual \
-				and ssc[0][-2 * i] == actual and ssc[-1 * i][-1 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[2 * i][-1 * i] == 1 or ssc[2 * i][-1 * i] == actual) \
-				and (ssc[-2 * i][-1 * i] == 1 or ssc[-2 * i][-1 * i] == actual):  # no. 103
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[0][-2 * i] == actual \
-				and ssc[-2 * i][-2 * i] == actual and ssc[-2 * i][0] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual) \
-				and (ssc[-3 * i][1 * i] == 1 or ssc[-3 * i][1 * i] == actual):  # no. 104
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
+            for self.multiple in (1, -1):
+                if self.ss("b", 1, 0) and self.ss("a", 1, 1) and self.ss("a", 2, 0) and self.ss("a", 1, -1) \
+                        and (self.ss("b", -1, 0) or self.ss("b", 3, 0)) \
+                        and (self.ss("b", -1, 0) or self.ss("b", 4, 0)) \
+                        and (self.ss("b", 3, 0) or self.ss("b", -2, 0)) \
+                        and (self.ss("b", 1, 2) or self.ss("b", 1, -2)) \
+                        and (self.ss("b", 1, 2) or self.ss("b", 1, -3)) \
+                        and (self.ss("b", 1, -2) or self.ss("b", 1, 3)):  # no. 101
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if self.ss("b", 1, -1) and self.ss("a", 2, 0) and self.ss("a", 2, -2) and self.ss("a", 0, -2) \
+                        and (self.ss("b", -1, 1) or self.ss("b", 3, -3)) \
+                        and (self.ss("b", -1, 1) or self.ss("b", 4, -4)) \
+                        and (self.ss("b", 3, -3) or self.ss("b", -2, 2)) \
+                        and (self.ss("b", 3, 1) or self.ss("b", -1, -3)) \
+                        and (self.ss("b", 3, 1) or self.ss("b", -2, -4))\
+                        and (self.ss("b", -1, -3) or self.ss("b", 4, 2)):  # no. 102
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[1 * self.multiple][-1 * self.multiple] == self.actual \
+                        and self.ssc[0][-2 * self.multiple] == self.actual and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 103
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[0][-2 * self.multiple] == self.actual \
+                        and self.ssc[-2 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][0] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][1 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    1 * self.multiple] == self.actual):  # no. 104
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
 
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[-1 * i][0] == actual \
-				and ssc[1 * i][1 * i] == actual and ssc[1 * i][-1 * i] == actual \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[1 * i][2 * i] == 1 or ssc[1 * i][2 * i] == actual) \
-				and (ssc[1 * i][-2 * i] == 1 or ssc[1 * i][-2 * i] == actual):  # no. 105
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[-1 * i][1 * i] == actual \
-				and ssc[2 * i][0] == actual and ssc[0][-2 * i] == actual \
-				and (ssc[-2 * i][2 * i] == 1 or ssc[-2 * i][2 * i] == actual) \
-				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
-				and (ssc[3 * i][1 * i] == 1 or ssc[3 * i][1 * i] == actual) \
-				and (ssc[-1 * i][-3 * i] == 1 or ssc[-1 * i][-3 * i] == actual):  # no. 106
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][1 * i] == actual \
-				and ssc[1 * i][-1 * i] == actual and ssc[-1 * i][-1 * i] == actual \
-				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i][0] == actual) \
-				and (ssc[2 * i][-1 * i] == 1 or ssc[2 * i][-1 * i] == actual) \
-				and (ssc[-2 * i][-1 * i] == 1 or ssc[-2 * i][-1 * i] == actual):  # no. 107
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
-				and ssc[0][-2 * i] == actual and ssc[-2 * i][0] == actual \
-				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
-				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
-				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual) \
-				and (ssc[-3 * i][1 * i] == 1 or ssc[-3 * i][1 * i] == actual):  # no. 108
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
-				and ssc[2 * i][1 * i] == actual and ssc[2 * i][-1 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
-				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual):  # no. 109
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
-				and ssc[3 * i][-1 * i] == actual and ssc[1 * i][-3 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[4 * i][0] == 1 or ssc[4 * i][0] == actual) \
-				and (ssc[0][-4 * i] == 1 or ssc[0][-4 * i] == actual):  # no. 110
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
-				and ssc[1 * i][-2 * i] == actual and ssc[-1 * i][-2 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
-				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual):  # no. 111
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
-				and ssc[-1 * i][-3 * i] == actual and ssc[-3 * i][-1 * i] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[0][-4 * i] == 1 or ssc[0][-4 * i] == actual) \
-				and (ssc[-4 * i][0] == 1 or ssc[-4 * i][0] == actual):  # no. 112
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) and ssc[0][2 * i] == actual \
-				and ssc[-1 * i][1 * i] == actual and ssc[-2 * i][1 * i] == actual \
-				and (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) \
-				and (ssc[0][3 * i] == 1 or ssc[0][3 * i] == actual) \
-				and (ssc[-3 * i][1 * i] == 1 or ssc[-3 * i][1 * i] == actual) \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual):  # no. 113
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) and ssc[2 * i][2 * i] == actual \
-				and ssc[0][2 * i] == actual and ssc[-1 * i][3 * i] == actual \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
-				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
-				and (ssc[-2 * i][4 * i] == 1 or ssc[-2 * i][4 * i] == actual) \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual):  # no. 114
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[2 * i][0] == actual \
-				and ssc[1 * i][1 * i] == actual and ssc[1 * i][2 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[1 * i][3 * i] == 1 or ssc[1 * i][3 * i] == actual) \
-				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual):  # no. 115
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[2 * i][-2 * i] == actual \
-				and ssc[2 * i][0] == actual and ssc[3 * i][1 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[4 * i][2 * i] == 1 or ssc[4 * i][2 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual):  # no. 116
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][-2 * i] == actual \
-				and ssc[-1 * i][-1 * i] == actual and ssc[-2 * i][-1 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[-3 * i][-1 * i] == 1 or ssc[-3 * i][-1 * i] == actual) \
-				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual):  # no. 117
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[-2 * i][-2 * i] == actual \
-				and ssc[-2 * i][0] == actual and ssc[-3 * i][1 * i] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[-4 * i][2 * i] == 1 or ssc[-4 * i][2 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual):  # no. 118
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) and ssc[-2 * i][0] == actual \
-				and ssc[-1 * i][1 * i] == actual and ssc[-1 * i][2 * i] == actual \
-				and (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) \
-				and (ssc[-3 * i][0] == 1 or ssc[-3 * i][0] == actual) \
-				and (ssc[-1 * i][3 * i] == 1 or ssc[-1 * i][3 * i] == actual) \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual):  # no. 119
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) and ssc[-2 * i][2 * i] == actual \
-				and ssc[0][2 * i] == actual and ssc[1 * i][3 * i] == actual \
-				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) \
-				and (ssc[-3 * i][3 * i] == 1 or ssc[-3 * i][3 * i] == actual) \
-				and (ssc[2 * i][4 * i] == 1 or ssc[2 * i][4 * i] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual):  # no. 120
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[-1 * i][0] == actual \
-				and ssc[1 * i][-1 * i] == actual and ssc[1 * i][-2 * i] == actual \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual):  # no. 121
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[-1 * i][0] == actual \
-				and ssc[1 * i][1 * i] == actual and ssc[1 * i][2 * i] == actual \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
-				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) \
-				and (ssc[1 * i][3 * i] == 1 or ssc[1 * i][3 * i] == actual):  # no. 122
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
-				and ssc[0][-2 * i] == actual and ssc[-1 * i][-3 * i] == actual \
-				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
-				and (ssc[-2 * i][2 * i] == 1 or ssc[-2 * i][2 * i] == actual) \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[-2 * i][-4 * i] == 1 or ssc[-2 * i][-4 * i] == actual):  # no. 123
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
-				and ssc[2 * i][0] == actual and ssc[3 * i][1 * i] == actual \
-				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
-				and (ssc[-2 * i][2 * i] == 1 or ssc[-2 * i][2 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[4 * i][2 * i] == 1 or ssc[4 * i][2 * i] == actual):  # no. 124
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][1 * i] == actual \
-				and ssc[-1 * i][-1 * i] == actual and ssc[-2 * i][-1 * i] == actual \
-				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[-3 * i][-1 * i] == 1 or ssc[-3 * i][-1 * i] == actual) \
-				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual):  # no. 125
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][1 * i] == actual \
-				and ssc[1 * i][-1 * i] == actual and ssc[2 * i][-1 * i] == actual \
-				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[3 * i][-1 * i] == 1 or ssc[3 * i][-1 * i] == actual) \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual):  # no. 126
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
-				and ssc[-2 * i][0] == actual and ssc[-3 * i][1 * i] == actual \
-				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
-				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
-				and (ssc[-4 * i][2 * i] == 1 or ssc[-4 * i][2 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual):  # no. 127
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
-				and ssc[0][-2 * i] == actual and ssc[1 * i][-3 * i] == actual \
-				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
-				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
-				and (ssc[2 * i][-4 * i] == 1 or ssc[2 * i][-4 * i] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual):  # no. 128
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
-				and ssc[2 * i][-1 * i] == actual and ssc[2 * i][-2 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[2 * i][1 * i] == 1 or ssc[2 * i][1 * i] == actual) \
-				and (ssc[2 * i][-3 * i] == 1 or ssc[2 * i][-3 * i] == actual):  # no. 129
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
-				and ssc[2 * i][1 * i] == actual and ssc[2 * i][2 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[2 * i][-1 * i] == 1 or ssc[2 * i][-1 * i] == actual) \
-				and (ssc[2 * i][3 * i] == 1 or ssc[2 * i][3 * i] == actual):  # no. 130
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
-				and ssc[1 * i][-3 * i] == actual and ssc[0][-4 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[-1 * i][5 * i] == 1 or ssc[-1 * i][5 * i] == actual) \
-				and (ssc[3 * i][-1 * i] == 1 or ssc[3 * i][-1 * i] == actual):  # no. 131
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
-				and ssc[3 * i][-1 * i] == actual and ssc[4 * i][0] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[5 * i][1 * i] == 1 or ssc[5 * i][1 * i] == actual) \
-				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual):  # no. 132
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
-				and ssc[-1 * i][-2 * i] == actual and ssc[-2 * i][-2 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[-3 * i][-2 * i] == 1 or ssc[-3 * i][-2 * i] == actual) \
-				and (ssc[1 * i][-2 * i] == 1 or ssc[1 * i][-2 * i] == actual):  # no. 133
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
-				and ssc[1 * i][-2 * i] == actual and ssc[2 * i][-2 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[3 * i][-2 * i] == 1 or ssc[3 * i][-2 * i] == actual) \
-				and (ssc[-1 * i][-2 * i] == 1 or ssc[-1 * i][-2 * i] == actual):  # no. 134
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
-				and ssc[-3 * i][-1 * i] == actual and ssc[-4 * i][0] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[-5 * i][1 * i] == 1 or ssc[-5 * i][1 * i] == actual) \
-				and (ssc[-1 * i][-3 * i] == 1 or ssc[-1 * i][-3 * i] == actual):  # no. 135
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
-				and ssc[-1 * i][-3 * i] == actual and ssc[0][-4 * i] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[1 * i][-5 * i] == 1 or ssc[1 * i][-5 * i] == actual) \
-				and (ssc[-3 * i][-1 * i] == 1 or ssc[-3 * i][-1 * i] == actual):  # no. 136
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[-1 * i][0] == actual \
-				and ssc[0][-2 * i] == actual and ssc[1 * i][-2 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[-2 * i][1 * i] == 1 or ssc[-2 * i][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[2 * i][-3 * i] == 1 or ssc[2 * i][-3 * i] == actual):  # no. 201
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[1 * i][0] == actual \
-				and ssc[0][-2 * i] == actual and ssc[-1 * i][-2 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[2 * i][1 * i] == 1 or ssc[2 * i][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[-2 * i][-3 * i] == 1 or ssc[-2 * i][-3 * i] == actual):  # no. 202
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[0][1 * i] == actual \
-				and ssc[2 * i][0] == actual and ssc[2 * i][-1 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[-1 * i][2 * i] == 1 or ssc[-1 * i][2 * i] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[3 * i][-2 * i] == 1 or ssc[3 * i][-2 * i] == actual):  # no. 203
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[0][-1 * i] == actual \
-				and ssc[2 * i][0] == actual and ssc[2 * i][1 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[-1 * i][-2 * i] == 1 or ssc[-1 * i][-2 * i] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[3 * i][2 * i] == 1 or ssc[3 * i][2 * i] == actual):  # no. 204
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[1 * i][0] == actual \
-				and ssc[1 * i][-2 * i] == actual and ssc[2 * i][-2 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual):  # no. 205
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[-1 * i][0] == actual \
-				and ssc[-1 * i][-2 * i] == actual and ssc[-2 * i][-2 * i] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[-1 * i][-3 * i] == 1 or ssc[-1 * i][-3 * i] == actual):  # no. 206
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[0][-1 * i] == actual \
-				and ssc[2 * i][-1 * i] == actual and ssc[2 * i][-2 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
-				and (ssc[3 * i][-1 * i] == 1 or ssc[3 * i][-1 * i] == actual):  # no. 207
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) and ssc[0][1 * i] == actual \
-				and ssc[2 * i][1 * i] == actual and ssc[2 * i][2 * i] == actual \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
-				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][1 * i] == 1 or ssc[3 * i][1 * i] == actual):  # no. 208
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[-1 * i][0] == actual \
-				and ssc[0][1 * i] == actual and ssc[2 * i][-1 * i] == actual \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
-				and (ssc[-1 * i][2 * i] == 1 or ssc[-1 * i][2 * i] == actual) \
-				and (ssc[3 * i][-2 * i] == 1 or ssc[3 * i][-2 * i] == actual):  # no. 209
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[-1 * i][0] == actual \
-				and ssc[0][-1 * i] == actual and ssc[2 * i][1 * i] == actual \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
-				and (ssc[-1 * i][-2 * i] == 1 or ssc[-1 * i][-2 * i] == actual) \
-				and (ssc[3 * i][2 * i] == 1 or ssc[3 * i][2 * i] == actual):  # no. 210
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[-1 * i][1 * i] == actual \
-				and ssc[1 * i][0] == actual and ssc[1 * i][-2 * i] == actual \
-				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
-				and (ssc[-2 * i][2 * i] == 1 or ssc[-2 * i][2 * i] == actual) \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[1 * i][-3 * i] == 1 or ssc[1 * i][-3 * i] == actual):  # no. 211
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[-1 * i][1 * i] == actual \
-				and ssc[0][-1 * i] == actual and ssc[2 * i][-1 * i] == actual \
-				and (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) \
-				and (ssc[-2 * i][2 * i] == 1 or ssc[-2 * i][2 * i] == actual) \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
-				and (ssc[3 * i][-1 * i] == 1 or ssc[3 * i][-1 * i] == actual):  # no. 212
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][1 * i] == actual \
-				and ssc[1 * i][0] == actual and ssc[-1 * i][-2 * i] == actual \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
-				and (ssc[2 * i][1 * i] == 1 or ssc[2 * i][1 * i] == actual) \
-				and (ssc[-2 * i][-3 * i] == 1 or ssc[-2 * i][-3 * i] == actual):  # no. 213
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][1 * i] == actual \
-				and ssc[-1 * i][0] == actual and ssc[1 * i][-2 * i] == actual \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
-				and (ssc[-2 * i][1 * i] == 1 or ssc[-2 * i][1 * i] == actual) \
-				and (ssc[2 * i][-3 * i] == 1 or ssc[2 * i][-3 * i] == actual):  # no. 214
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
-				and ssc[0][-1 * i] == actual and ssc[-2 * i][-1 * i] == actual \
-				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
-				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
-				and (ssc[-3 * i][-1 * i] == 1 or ssc[-3 * i][-1 * i] == actual) \
-				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual):  # no. 215
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) and ssc[1 * i][1 * i] == actual \
-				and ssc[-1 * i][0] == actual and ssc[-1 * i][-2 * i] == actual \
-				and (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) \
-				and (ssc[2 * i][2 * i] == 1 or ssc[2 * i][2 * i] == actual) \
-				and (ssc[-1 * i][-3 * i] == 1 or ssc[-1 * i][-3 * i] == actual) \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual):  # no. 216
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
-				and ssc[1 * i][1 * i] == actual and ssc[3 * i][-1 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[0][2 * i] == 1 or ssc[0][2 * i] == actual) \
-				and (ssc[4 * i][-2 * i] == 1 or ssc[4 * i][-2 * i] == actual):  # no. 217
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) and ssc[1 * i][0] == actual \
-				and ssc[1 * i][-1 * i] == actual and ssc[3 * i][1 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[4 * i][2 * i] == 1 or ssc[4 * i][2 * i] == actual):  # no. 218
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
-				and ssc[2 * i][-1 * i] == actual and ssc[2 * i][-3 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[2 * i][-4 * i] == 1 or ssc[2 * i][-4 * i] == actual):  # no. 219
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[2 * i][-2 * i] == 1 or ssc[2 * i][-2 * i] == actual) and ssc[1 * i][-1 * i] == actual \
-				and ssc[1 * i][-2 * i] == actual and ssc[3 * i][-2 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[4 * i][-2 * i] == 1 or ssc[4 * i][-2 * i] == actual):  # no. 220
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
-				and ssc[1 * i][-1 * i] == actual and ssc[-1 * i][-3 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[2 * i][0] == 1 or ssc[2 * i][0] == actual) \
-				and (ssc[-2 * i][-4 * i] == 1 or ssc[-2 * i][-4 * i] == actual):  # no. 221
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) and ssc[0][-1 * i] == actual \
-				and ssc[-1 * i][-1 * i] == actual and ssc[1 * i][-3 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
-				and (ssc[2 * i][-4 * i] == 1 or ssc[2 * i][-4 * i] == actual):  # no. 222
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
-				and ssc[-1 * i][-2 * i] == actual and ssc[-3 * i][-2 * i] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[0][-2 * i] == 1 or ssc[0][-2 * i] == actual) \
-				and (ssc[-4 * i][-2 * i] == 1 or ssc[-4 * i][-2 * i] == actual):  # no. 223
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-2 * i][-2 * i] == 1 or ssc[-2 * i][-2 * i] == actual) and ssc[-1 * i][-1 * i] == actual \
-				and ssc[-2 * i][-1 * i] == actual and ssc[-2 * i][-3 * i] == actual \
-				and (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) \
-				and (ssc[-3 * i][-3 * i] == 1 or ssc[-3 * i][-3 * i] == actual) \
-				and (ssc[-2 * i][0] == 1 or ssc[-2 * i][0] == actual) \
-				and (ssc[-2 * i][-4 * i] == 1 or ssc[-2 * i][-4 * i] == actual):  # no. 224
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) and ssc[-2 * i][-2 * i] == actual \
-				and ssc[-2 * i][1 * i] == actual and ssc[-3 * i][1 * i] == actual \
-				and (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) \
-				and (ssc[-3 * i][3 * i] == 1 or ssc[-3 * i][3 * i] == actual) \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[-4 * i][1 * i] == 1 or ssc[-4 * i][1 * i] == actual):  # no. 225
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) and ssc[2 * i][2 * i] == actual \
-				and ssc[0][1 * i] == actual and ssc[-1 * i][1 * i] == actual \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
-				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
-				and (ssc[2 * i][1 * i] == 1 or ssc[2 * i][1 * i] == actual) \
-				and (ssc[-2 * i][1 * i] == 1 or ssc[-2 * i][1 * i] == actual):  # no. 226
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) and ssc[0][2 * i] == actual \
-				and ssc[-1 * i][2 * i] == actual and ssc[-2 * i][3 * i] == actual \
-				and (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) \
-				and (ssc[0][3 * i] == 1 or ssc[0][3 * i] == actual) \
-				and (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) \
-				and (ssc[-3 * i][4 * i] == 1 or ssc[-3 * i][4 * i] == actual):  # no. 227
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[2 * i][0] == actual \
-				and ssc[0][1 * i] == actual and ssc[-1 * i][2 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[2 * i][-1 * i] == 1 or ssc[2 * i][-1 * i] == actual) \
-				and (ssc[-2 * i][3 * i] == 1 or ssc[-2 * i][3 * i] == actual):  # no. 228
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][1 * i] == 1 or ssc[1 * i][1 * i] == actual) and ssc[2 * i][2 * i] == actual \
-				and ssc[1 * i][2 * i] == actual and ssc[1 * i][3 * i] == actual \
-				and (ssc[-1 * i][-1 * i] == 1 or ssc[-1 * i][-1 * i] == actual) \
-				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
-				and (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) \
-				and (ssc[1 * i][4 * i] == 1 or ssc[1 * i][4 * i] == actual):  # no. 229
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[2 * i][-2 * i] == actual \
-				and ssc[1 * i][0] == actual and ssc[1 * i][1 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][-3 * i] == 1 or ssc[3 * i][-3 * i] == actual) \
-				and (ssc[1 * i][2 * i] == 1 or ssc[1 * i][2 * i] == actual) \
-				and (ssc[1 * i][-2 * i] == 1 or ssc[1 * i][-2 * i] == actual):  # no. 230
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][0] == 1 or ssc[1 * i][0] == actual) and ssc[2 * i][0] == actual \
-				and ssc[2 * i][1 * i] == actual and ssc[3 * i][2 * i] == actual \
-				and (ssc[-1 * i][0] == 1 or ssc[-1 * i][0] == actual) \
-				and (ssc[3 * i][0] == 1 or ssc[3 * i][0] == actual) \
-				and (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) \
-				and (ssc[4 * i][3 * i] == 1 or ssc[4 * i][3 * i] == actual):  # no. 231
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[0][-1 * i] == 1 or ssc[0][-1 * i] == actual) and ssc[0][-2 * i] == actual \
-				and ssc[1 * i][0] == actual and ssc[2 * i][1 * i] == actual \
-				and (ssc[0][1 * i] == 1 or ssc[0][1 * i] == actual) \
-				and (ssc[0][-3 * i] == 1 or ssc[0][-3 * i] == actual) \
-				and (ssc[-1 * i][-2 * i] == 1 or ssc[-1 * i][-2 * i] == actual) \
-				and (ssc[3 * i][2 * i] == 1 or ssc[3 * i][2 * i] == actual):  # no. 232
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-			if (ssc[1 * i][-1 * i] == 1 or ssc[1 * i][-1 * i] == actual) and ssc[2 * i][-2 * i] == actual \
-				and ssc[0][-1 * i] == actual and ssc[-1 * i][-1 * i] == actual \
-				and (ssc[-1 * i][1 * i] == 1 or ssc[-1 * i][1 * i] == actual) \
-				and (ssc[3 * i][3 * i] == 1 or ssc[3 * i][3 * i] == actual) \
-				and (ssc[2 * i][-1 * i] == 1 or ssc[2 * i][-1 * i] == actual) \
-				and (ssc[-2 * i][-1 * i] == 1 or ssc[-2 * i][-1 * i] == actual):  # no. 233
-				score = count_dir_score(score, actual, u_id, 500, 0)
-				return score
-	return score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[-1 * self.multiple][0] == self.actual \
+                        and self.ssc[1 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[1 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[1 * self.multiple][2 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-2 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 105
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][0] == self.actual and self.ssc[0][
+                    -2 * self.multiple] == self.actual \
+                        and (self.ssc[-2 * self.multiple][2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][1 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 106
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[0][1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[-1 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[0][2 * self.multiple] == 1 or self.ssc[0][2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 107
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[0][-2 * self.multiple] == self.actual and self.ssc[-2 * self.multiple][
+                    0] == self.actual \
+                        and (self.ssc[2 * self.multiple][2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][1 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    1 * self.multiple] == self.actual):  # no. 108
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) and \
+                        self.ssc[1 * self.multiple][0] == self.actual \
+                        and self.ssc[2 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 109
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[3 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[1 * self.multiple][-3 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[4 * self.multiple][0] == 1 or self.ssc[4 * self.multiple][0] == self.actual) \
+                        and (self.ssc[0][-4 * self.multiple] == 1 or self.ssc[0][
+                    -4 * self.multiple] == self.actual):  # no. 110
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) and \
+                        self.ssc[0][-1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[-1 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 111
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][-3 * self.multiple] == self.actual and \
+                        self.ssc[-3 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-4 * self.multiple] == 1 or self.ssc[0][-4 * self.multiple] == self.actual) \
+                        and (self.ssc[-4 * self.multiple][0] == 1 or self.ssc[-4 * self.multiple][
+                    0] == self.actual):  # no. 112
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) and \
+                        self.ssc[0][2 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][1 * self.multiple] == self.actual \
+                        and (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][3 * self.multiple] == 1 or self.ssc[0][3 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][1 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual):  # no. 113
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) and self.ssc[2 * self.multiple][2 * self.multiple] == self.actual \
+                        and self.ssc[0][2 * self.multiple] == self.actual and self.ssc[-1 * self.multiple][
+                    3 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][4 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    4 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][
+                    0] == self.actual):  # no. 114
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[2 * self.multiple][0] == self.actual \
+                        and self.ssc[1 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[1 * self.multiple][2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[1 * self.multiple][3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 115
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][0] == self.actual and self.ssc[3 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[4 * self.multiple][2 * self.multiple] == 1 or self.ssc[4 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][
+                    -2 * self.multiple] == self.actual):  # no. 116
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[0][-2 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 117
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and self.ssc[-2 * self.multiple][0] == self.actual and self.ssc[-3 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-4 * self.multiple][2 * self.multiple] == 1 or self.ssc[-4 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][
+                    -2 * self.multiple] == self.actual):  # no. 118
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) and \
+                        self.ssc[-2 * self.multiple][0] == self.actual \
+                        and self.ssc[-1 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[-1 * self.multiple][2 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][0] == 1 or self.ssc[-3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][3 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 119
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) and self.ssc[-2 * self.multiple][
+                    2 * self.multiple] == self.actual \
+                        and self.ssc[0][2 * self.multiple] == self.actual and self.ssc[1 * self.multiple][
+                    3 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][4 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    4 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][
+                    0] == self.actual):  # no. 120
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[-1 * self.multiple][0] == self.actual \
+                        and self.ssc[1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[1 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 121
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[-1 * self.multiple][0] == self.actual \
+                        and self.ssc[1 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[1 * self.multiple][2 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    3 * self.multiple] == self.actual):  # no. 122
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[0][-2 * self.multiple] == self.actual and self.ssc[-1 * self.multiple][
+                    -3 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-4 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -4 * self.multiple] == self.actual):  # no. 123
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][0] == self.actual and self.ssc[3 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[4 * self.multiple][2 * self.multiple] == 1 or self.ssc[4 * self.multiple][
+                    2 * self.multiple] == self.actual):  # no. 124
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[0][1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[0][2 * self.multiple] == 1 or self.ssc[0][2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 125
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[0][1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[0][2 * self.multiple] == 1 or self.ssc[0][2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 126
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[-2 * self.multiple][0] == self.actual and self.ssc[-3 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[-4 * self.multiple][2 * self.multiple] == 1 or self.ssc[-4 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][
+                    -2 * self.multiple] == self.actual):  # no. 127
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[0][-2 * self.multiple] == self.actual and self.ssc[1 * self.multiple][
+                    -3 * self.multiple] == self.actual \
+                        and (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-4 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -4 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][
+                    0] == self.actual):  # no. 128
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) and \
+                        self.ssc[1 * self.multiple][0] == self.actual \
+                        and self.ssc[2 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-3 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 129
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) and \
+                        self.ssc[1 * self.multiple][0] == self.actual \
+                        and self.ssc[2 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][3 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    3 * self.multiple] == self.actual):  # no. 130
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][-3 * self.multiple] == self.actual and self.ssc[0][
+                    -4 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][5 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    5 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 131
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[3 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[4 * self.multiple][0] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[5 * self.multiple][1 * self.multiple] == 1 or self.ssc[5 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 132
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) and \
+                        self.ssc[0][-1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-2 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 133
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) and \
+                        self.ssc[0][-1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-2 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 134
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[-3 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[-4 * self.multiple][0] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-5 * self.multiple][1 * self.multiple] == 1 or self.ssc[-5 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 135
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][-3 * self.multiple] == self.actual and self.ssc[0][
+                    -4 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-5 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -5 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 136
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[-1 * self.multiple][0] == self.actual \
+                        and self.ssc[0][-2 * self.multiple] == self.actual and self.ssc[1 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][1 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-3 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 201
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[1 * self.multiple][0] == self.actual \
+                        and self.ssc[0][-2 * self.multiple] == self.actual and self.ssc[-1 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 202
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[0][1 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][0] == self.actual and self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][2 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-2 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 203
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[0][-1 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][0] == self.actual and self.ssc[2 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][2 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    2 * self.multiple] == self.actual):  # no. 204
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][0] == self.actual \
+                        and self.ssc[1 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 205
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][0] == self.actual \
+                        and self.ssc[-1 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 206
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[0][-1 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 207
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) and self.ssc[0][1 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][1 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    1 * self.multiple] == self.actual):  # no. 208
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[-1 * self.multiple][0] == self.actual \
+                        and self.ssc[0][1 * self.multiple] == self.actual and self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][2 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-2 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 209
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[-1 * self.multiple][0] == self.actual \
+                        and self.ssc[0][-1 * self.multiple] == self.actual and self.ssc[2 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][2 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    2 * self.multiple] == self.actual):  # no. 210
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][0] == self.actual and self.ssc[1 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 211
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[0][-1 * self.multiple] == self.actual and self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 212
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[0][1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][0] == self.actual and self.ssc[-1 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][2 * self.multiple] == 1 or self.ssc[0][2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 213
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[0][1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][0] == self.actual and self.ssc[1 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[0][2 * self.multiple] == 1 or self.ssc[0][2 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][1 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-3 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -3 * self.multiple] == self.actual):  # no. 214
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[0][-1 * self.multiple] == self.actual and self.ssc[-2 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 215
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][0] == self.actual and self.ssc[-1 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual):  # no. 216
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) and \
+                        self.ssc[1 * self.multiple][0] == self.actual \
+                        and self.ssc[1 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[3 * self.multiple][-1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[0][2 * self.multiple] == 1 or self.ssc[0][2 * self.multiple] == self.actual) \
+                        and (self.ssc[4 * self.multiple][-2 * self.multiple] == 1 or self.ssc[4 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 217
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) and \
+                        self.ssc[1 * self.multiple][0] == self.actual \
+                        and self.ssc[1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[3 * self.multiple][1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[4 * self.multiple][2 * self.multiple] == 1 or self.ssc[4 * self.multiple][
+                    2 * self.multiple] == self.actual):  # no. 218
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[2 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[2 * self.multiple][-3 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-4 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -4 * self.multiple] == self.actual):  # no. 219
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[3 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[4 * self.multiple][-2 * self.multiple] == 1 or self.ssc[4 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 220
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) and \
+                        self.ssc[0][-1 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[-1 * self.multiple][-3 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][0] == 1 or self.ssc[2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-4 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -4 * self.multiple] == self.actual):  # no. 221
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) and \
+                        self.ssc[0][-1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[1 * self.multiple][-3 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-4 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -4 * self.multiple] == self.actual):  # no. 222
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][-2 * self.multiple] == self.actual and \
+                        self.ssc[-3 * self.multiple][-2 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-2 * self.multiple] == 1 or self.ssc[0][-2 * self.multiple] == self.actual) \
+                        and (self.ssc[-4 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-4 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 223
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-2 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual) and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and self.ssc[-2 * self.multiple][-1 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][-3 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][0] == 1 or self.ssc[-2 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-4 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -4 * self.multiple] == self.actual):  # no. 224
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) and self.ssc[-2 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and self.ssc[-2 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[-3 * self.multiple][1 * self.multiple] == self.actual \
+                        and (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][3 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[-4 * self.multiple][1 * self.multiple] == 1 or self.ssc[-4 * self.multiple][
+                    1 * self.multiple] == self.actual):  # no. 225
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) and self.ssc[2 * self.multiple][2 * self.multiple] == self.actual \
+                        and self.ssc[0][1 * self.multiple] == self.actual and self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][1 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    1 * self.multiple] == self.actual):  # no. 226
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) and \
+                        self.ssc[0][2 * self.multiple] == self.actual \
+                        and self.ssc[-1 * self.multiple][2 * self.multiple] == self.actual and \
+                        self.ssc[-2 * self.multiple][3 * self.multiple] == self.actual \
+                        and (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][3 * self.multiple] == 1 or self.ssc[0][3 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[-3 * self.multiple][4 * self.multiple] == 1 or self.ssc[-3 * self.multiple][
+                    4 * self.multiple] == self.actual):  # no. 227
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[2 * self.multiple][0] == self.actual \
+                        and self.ssc[0][1 * self.multiple] == self.actual and self.ssc[-1 * self.multiple][
+                    2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][3 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    3 * self.multiple] == self.actual):  # no. 228
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual) and self.ssc[2 * self.multiple][2 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][2 * self.multiple] == self.actual and \
+                        self.ssc[1 * self.multiple][3 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[1 * self.multiple][4 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    4 * self.multiple] == self.actual):  # no. 229
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][0] == self.actual and self.ssc[1 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][-3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    -3 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][2 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    2 * self.multiple] == self.actual) \
+                        and (self.ssc[1 * self.multiple][-2 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -2 * self.multiple] == self.actual):  # no. 230
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][0] == 1 or self.ssc[1 * self.multiple][0] == self.actual) and \
+                        self.ssc[2 * self.multiple][0] == self.actual \
+                        and self.ssc[2 * self.multiple][1 * self.multiple] == self.actual and \
+                        self.ssc[3 * self.multiple][2 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][0] == 1 or self.ssc[-1 * self.multiple][0] == self.actual) \
+                        and (self.ssc[3 * self.multiple][0] == 1 or self.ssc[3 * self.multiple][0] == self.actual) \
+                        and (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) \
+                        and (self.ssc[4 * self.multiple][3 * self.multiple] == 1 or self.ssc[4 * self.multiple][
+                    3 * self.multiple] == self.actual):  # no. 231
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[0][-1 * self.multiple] == 1 or self.ssc[0][-1 * self.multiple] == self.actual) and \
+                        self.ssc[0][-2 * self.multiple] == self.actual \
+                        and self.ssc[1 * self.multiple][0] == self.actual and self.ssc[2 * self.multiple][
+                    1 * self.multiple] == self.actual \
+                        and (self.ssc[0][1 * self.multiple] == 1 or self.ssc[0][1 * self.multiple] == self.actual) \
+                        and (self.ssc[0][-3 * self.multiple] == 1 or self.ssc[0][-3 * self.multiple] == self.actual) \
+                        and (self.ssc[-1 * self.multiple][-2 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    -2 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][2 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    2 * self.multiple] == self.actual):  # no. 232
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+                if (self.ssc[1 * self.multiple][-1 * self.multiple] == 1 or self.ssc[1 * self.multiple][
+                    -1 * self.multiple] == self.actual) and self.ssc[2 * self.multiple][
+                    -2 * self.multiple] == self.actual \
+                        and self.ssc[0][-1 * self.multiple] == self.actual and self.ssc[-1 * self.multiple][
+                    -1 * self.multiple] == self.actual \
+                        and (self.ssc[-1 * self.multiple][1 * self.multiple] == 1 or self.ssc[-1 * self.multiple][
+                    1 * self.multiple] == self.actual) \
+                        and (self.ssc[3 * self.multiple][3 * self.multiple] == 1 or self.ssc[3 * self.multiple][
+                    3 * self.multiple] == self.actual) \
+                        and (self.ssc[2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[2 * self.multiple][
+                    -1 * self.multiple] == self.actual) \
+                        and (self.ssc[-2 * self.multiple][-1 * self.multiple] == 1 or self.ssc[-2 * self.multiple][
+                    -1 * self.multiple] == self.actual):  # no. 233
+                    self.count_dir_score(500, 0)
+                    return self.dir_score
+        return self.dir_score
 
+    def count_dir_score(self, new_score_actual, new_score_opponent):
+        if self.actual == self.u_id:
+            if new_score_actual > self.dir_score:
+                self.dir_score = new_score_actual
+        else:
+            if new_score_opponent > self.dir_score:
+                self.dir_score = new_score_opponent
 
-def count_dir_score(dir_score, actual, u_id, new_score_actual, new_score_opponent):
-	if actual == u_id:
-		if new_score_actual > dir_score:
-			dir_score = new_score_actual
-	else:
-		if new_score_opponent > dir_score:
-			dir_score = new_score_opponent
-	return dir_score
+    def square_state(self, position, direction):
+        if direction == 0:
+            if self.y + position < self.grid['y'][0] or self.y + position > self.grid['y'][1]:  # out of grid
+                return self.opponent
+            if self.x in self.game and self.y + position in self.game[self.x]:
+                return self.game[self.x][self.y + position]
+        if direction == 1:
+            if self.x + position < self.grid['x'][0] or self.x + position > self.grid['x'][1] or self.y + position < \
+                    self.grid['y'][0] or \
+                    self.y + position > self.grid['y'][1]:  # out of grid
+                return self.opponent
+            if self.x + position in self.game and self.y + position in self.game[self.x + position]:
+                return self.game[self.x + position][self.y + position]
+        if direction == 2:
+            if self.x + position < self.grid['x'][0] or self.x + position > self.grid['x'][1]:  # out of grid
+                return self.opponent
+            if self.x + position in self.game and self.y in self.game[self.x + position]:
+                return self.game[self.x + position][self.y]
+        if direction == 3:
+            if self.x + position < self.grid['x'][0] or self.x + position > self.grid['x'][1] or self.y - position < \
+                    self.grid['y'][0] or \
+                    self.y - position > self.grid['y'][1]:  # out of grid
+                return self.opponent
+            if self.x + position in self.game and self.y - position in self.game[self.x + position]:
+                return self.game[self.x + position][self.y - position]
+        return 1
 
+    def square_state_custom(self, move_x, move_y):
+        if self.x + move_x < self.grid['x'][0] or self.x + move_x > self.grid['x'][1] or self.y + move_y < \
+                self.grid['y'][0] or \
+                self.y + move_y > self.grid['y'][1]:
+            return self.opponent
+        if self.x + move_x in self.game and self.y + move_y in self.game[self.x + move_x]:
+            return self.game[self.x + move_x][self.y + move_y]
+        return 1
 
-def square_state(game, x, y, position, direction, grid, opponent):
-	if direction == 0:
-		if y + position < grid['y'][0] or y + position > grid['y'][1]:  # out of grid
-			return opponent
-		if x in game and y + position in game[x]:
-			return game[x][y + position]
-	if direction == 1:
-		if x + position < grid['x'][0] or x + position > grid['x'][1] or y + position < grid['y'][0] or \
-			y + position > grid['y'][1]:  # out of grid
-			return opponent
-		if x + position in game and y + position in game[x + position]:
-			return game[x + position][y + position]
-	if direction == 2:
-		if x + position < grid['x'][0] or x + position > grid['x'][1]:  # out of grid
-			return opponent
-		if x + position in game and y in game[x + position]:
-			return game[x + position][y]
-	if direction == 3:
-		if x + position < grid['x'][0] or x + position > grid['x'][1] or y - position < grid['y'][0] or \
-			y - position > grid['y'][1]:  # out of grid
-			return opponent
-		if x + position in game and y - position in game[x + position]:
-			return game[x + position][y - position]
-	return 1
+    def ss(self, check_type, x, y):
+        # check_type ~ b ( both ), a ( actual )
+        if check_type == "b":
+            return self.ssc[x * self.multiple][y * self.multiple] == 1 or \
+                   self.ssc[x * self.multiple][y * self.multiple] == self.actual
+        elif check_type == "a":
+            return self.ssc[x * self.multiple][y * self.multiple] == self.actual
 
+    def thinking(self, game):
+        print('Thinking')
+        res = list()
+        # If first move:
+        if len(game) == 0:
+            res.append(random.randrange(self.grid['x'][0] + 25, self.grid['x'][1] - 25, 3))
+            res.append(random.randrange(self.grid['y'][0] + 15, self.grid['y'][1] - 15, 3))
+            return [res, 0]
 
-def square_state_custom(game, x, y, move_x, move_y, grid, opponent):
-	if x + move_x < grid['x'][0] or x + move_x > grid['x'][1] or y + move_y < grid['y'][0] or y + move_y > grid['y'][1]:
-		return opponent
-	if x + move_x in game and y + move_y in game[x + move_x]:
-		return game[x + move_x][y + move_y]
-	return 1
-
-
-def ss(ssc, i, actual, check_type, x, y):
-	# check_type ~ b ( both ), a ( actual )
-	if check_type == "b":
-		return ssc[x * i][y * i] == 1 or ssc[x * i][y * i] == actual
-	elif check_type == "a":
-		return ssc[x * i][y * i] == actual
-
-
-def thinking(game, grid, u_id, opp_id):
-	print('Thinking')
-	res = list()
-	# If first move:
-	if len(game) == 0:
-		res.append(random.randrange(grid['x'][0] + 25, grid['x'][1] - 25, 3))
-		res.append(random.randrange(grid['y'][0] + 15, grid['y'][1] - 15, 3))
-		return [res, 0]
-
-	score_list = list()
-	for x, line in game.items():
-		for y, square in line.items():
-			if square == 1:
-				score = 0
-				score = score + check_square(game, grid, x, y, u_id, opp_id, u_id)
-				score = score + check_square(game, grid, x, y, opp_id, u_id, u_id)
-				score_list.append({'x': x, 'y': y, 'score': score})
-	scores_sorted = sorted(score_list, key=lambda d: d['score'], reverse=True)
-	# print(scores_sorted)
-	res_scores = list()
-	for i in scores_sorted:
-		if i['score'] == scores_sorted[0]['score']:
-			res_scores.append(i)
-	random.shuffle(res_scores)
-	res.append(res_scores[0]['x'])
-	res.append(res_scores[0]['y'])
-	return [res, res_scores[0]['score']]
+        score_list = list()
+        for x, line in game.items():
+            for y, square in line.items():
+                if square == 1:
+                    score = 0
+                    self.game = game
+                    self.x = x
+                    self.y = y
+                    self.actual = self.u_id
+                    self.opponent = self.opp_id
+                    score = score + self.check_square()
+                    self.actual = self.opp_id
+                    self.opponent = self.u_id
+                    score = score + self.check_square()
+                    score_list.append({'x': x, 'y': y, 'score': score})
+        scores_sorted = sorted(score_list, key=lambda d: d['score'], reverse=True)
+        # print(scores_sorted)
+        res_scores = list()
+        for i in scores_sorted:
+            if i['score'] == scores_sorted[0]['score']:
+                res_scores.append(i)
+        random.shuffle(res_scores)
+        res.append(res_scores[0]['x'])
+        res.append(res_scores[0]['y'])
+        return [res, res_scores[0]['score']]

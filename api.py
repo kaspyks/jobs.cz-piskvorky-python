@@ -4,7 +4,6 @@ from time import sleep
 import requests
 import json
 import simplejson
-import think
 
 
 def completed_game(conn, res, g_token, u_id):
@@ -54,7 +53,6 @@ def edit_game_dict(res, game, grid):
                 game[x][y + i] = 1
             if y - i not in game[x] and y - i >= grid['y'][0]:
                 game[x][y - i] = 1
-
     return game
 
 
@@ -171,7 +169,7 @@ def req(uri, u_token, g_token="", next_hit=""):
             sleep(2)
 
 
-def send_hit(conn, g_id, g_token, u_token, u_id, opp_id, think_return, game, grid):
+def send_hit(conn, t, g_id, g_token, u_token, u_id, think_return, game, grid):
     print('Send my hit ' + str(think_return[0]))
     while True:
         res = req("play", u_token, g_token, think_return[0])
@@ -195,7 +193,7 @@ def send_hit(conn, g_id, g_token, u_token, u_id, opp_id, think_return, game, gri
             print(res)
             sleep(1)
             game = regenerate_db(u_token, g_token, grid)
-            think_return = think.thinking(game, grid, u_id, opp_id)
+            think_return = t.thinking(game)
 
 
 def waiting(conn, u_token, g_token, u_id):
