@@ -1,5 +1,4 @@
 centralDB.db
 __pycache__
-rozpis_moznosti.ods
 .idea
-.~*
+local_config.py

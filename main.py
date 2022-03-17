@@ -7,6 +7,7 @@ import os
 import api
 import think
 from time import sleep
+import local_config
 
 
 def get_script_path():
@@ -27,8 +28,8 @@ def main():
 	grid = dict()
 	grid['x'] = (-28, 28)
 	grid['y'] = (-20, 20)
-	u_token = "54983a0e-ad70-42d8-bf1a-18341175057e"
-	u_id = "af05f814-a669-4287-8ffb-a317d831a4f6"
+	u_token = local_config.u_token
+	u_id = local_config.u_id
 	conn = sqlite_connect(get_script_path() + "/centralDB.db")
 
 	g_data = api.init_game(conn, u_token, sys.argv)
