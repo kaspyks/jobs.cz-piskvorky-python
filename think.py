@@ -98,7 +98,6 @@ class Thinking:
                         if a_s[-1 * i] == 1 and a_s[-2 * i] == self.actual:  # no. 27
                             # print("X: " + str(self.x) + ", Y: " + str(self.y) + ", D: " + str(d) + ", no. 27")
                             self.count_dir_score(600, 500)
-
                     if a_s[2 * i] == 1:
                         if a_s[-1 * i] == 1:  # no. 23
                             # print("X: " + str(self.x) + ", Y: " + str(self.y) + ", D: " + str(d) + ", no. 23")
@@ -167,6 +166,9 @@ class Thinking:
                         # print("X: " + str(self.x) + ", Y: " + str(self.y) + ", D: " + str(d) + ", no. 10")
                         self.count_dir_score(600, 500)
                         hardening += 1
+                        if a_s[3] == self.actual and a_s[-3] == self.actual:  # no. 31
+                            # print("X: " + str(self.x) + ", Y: " + str(self.y) + ", D: " + str(d) + ", no. 31")
+                            self.count_dir_score(8000, 3000)
 
             score += self.dir_score
         if hardening > 1:
